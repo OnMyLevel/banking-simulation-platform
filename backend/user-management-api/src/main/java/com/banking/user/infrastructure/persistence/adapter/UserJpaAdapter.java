@@ -26,4 +26,9 @@ public class UserJpaAdapter implements UserRepository {
     public Optional<User> findById(UUID id) {
         return userJpaRepository.findById(id).map(UserMapper::toDomain);
     }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return userJpaRepository.hasEmail(email);
+    }
 }
