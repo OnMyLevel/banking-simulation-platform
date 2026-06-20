@@ -1,0 +1,49 @@
+name: Dev to Main Validation
+
+on:
+  push:
+    branches:
+      - dev
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  backend-build:
+    name: Backend build and tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - user-management-api
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Build service
+        working-directory: backend/${{ matrix.service }}
+        run: mvn -B clean verify
+
+  docs-check:
+    name: Documentation check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: List documentation
+        run: |
+          test -d docs
+          find docs -type f | sort

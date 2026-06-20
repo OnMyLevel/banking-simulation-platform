@@ -23,27 +23,61 @@ Références principales :
 
 - Microsoft Azure Architecture Center — RESTful Web API Design Best Practices
 - Zalando RESTful API and Event Guidelines
+- OWASP API Security Top 10
+- NIST Secure Software Development Framework
 
 ---
 
-## 2. Principes backend obligatoires
+## 2. Architecture obligatoire
 
-Chaque API doit respecter les principes suivants :
+Respect strict du flux suivant :
 
-- API First ;
-- RESTful design ;
-- OpenAPI documenté ;
-- architecture hexagonale ;
-- séparation domaine / application / infrastructure ;
-- sécurité par défaut ;
-- observabilité par défaut ;
-- tests automatisés ;
-- logs structurés ;
-- gestion d'erreurs standardisée.
+```text
+Controller
+  -> Facade / UseCase
+  -> Service
+  -> Repository métier
+  -> JPA Adapter
+  -> JpaRepository
+  -> PostgreSQL
+```
+
+Diagramme :
+
+```mermaid
+flowchart TB
+    CONTROLLER["REST Controller"]
+    FACADE["Facade / UseCase"]
+    SERVICE["Domain Service"]
+    REPOSITORY["Domain Repository"]
+    ADAPTER["JPA Adapter"]
+    JPA["Spring Data JPA"]
+    DB["PostgreSQL"]
+
+    CONTROLLER --> FACADE
+    FACADE --> SERVICE
+    SERVICE --> REPOSITORY
+    REPOSITORY --> ADAPTER
+    ADAPTER --> JPA
+    JPA --> DB
+```
+
+Règles essentielles :
+
+- le Controller ne contient jamais de logique métier ;
+- le Controller reçoit des DTO request et retourne des DTO response ;
+- la Facade ou le UseCase orchestre le cas d'usage ;
+- le Service porte les règles métier ;
+- le Service ne manipule pas directement les Entity JPA ;
+- le Repository métier est une interface du domaine ;
+- le JPA Adapter implémente le Repository métier ;
+- le JpaRepository reste dans l'infrastructure ;
+- les objets Domain sont séparés des Entity ;
+- toute conversion passe par un Mapper.
 
 ---
 
-## 3. Architecture interne d'un service
+## 3. Structure interne d'un service
 
 Chaque microservice Spring Boot doit suivre cette structure :
 
@@ -52,8 +86,10 @@ src/main/java/com/banking/<service>/
 ├── api/
 │   ├── controller/
 │   ├── request/
-│   └── response/
+│   ├── response/
+│   └── error/
 ├── application/
+│   ├── facade/
 │   ├── usecase/
 │   ├── command/
 │   └── query/
@@ -75,7 +111,7 @@ src/main/java/com/banking/<service>/
 └── config/
 ```
 
-Règle importante :
+Règle absolue :
 
 ```text
 Le domaine ne dépend jamais de Spring, JPA, REST, Kafka ou d'un framework technique.
@@ -83,49 +119,117 @@ Le domaine ne dépend jamais de Spring, JPA, REST, Kafka ou d'un framework techn
 
 ---
 
-## 4. Règles de nommage Java
+## 4. Nommage obligatoire
+
+Pour chaque agrégat, respecter ce schéma :
+
+```text
+UserController
+UserFacade
+UserService
+UserRepository
+UserJpaAdapter
+UserJpaRepository
+UserEntity
+UserMapper
+```
+
+Règles Java :
 
 | Élément | Règle | Exemple |
 |---|---|---|
-| Package | lowercase | `com.banking.account.domain.model` |
-| Classe | PascalCase | `AccountService` |
-| Interface | PascalCase | `AccountRepository` |
-| Méthode | camelCase | `createAccount()` |
-| Variable | camelCase | `accountId` |
+| Package | lowercase | `com.banking.user.domain.model` |
+| Classe | PascalCase | `UserService` |
+| Interface | PascalCase | `UserRepository` |
+| Méthode | camelCase | `createUser()` |
+| Variable | camelCase | `userId` |
 | Constante | UPPER_SNAKE_CASE | `MAX_TRANSFER_AMOUNT` |
-| Enum | PascalCase | `AccountStatus` |
-| Valeur enum | UPPER_SNAKE_CASE | `PENDING_APPROVAL` |
+| Enum | PascalCase | `UserStatus` |
+| Valeur enum | UPPER_SNAKE_CASE | `ACTIVE` |
 
 ---
 
-## 5. Règles REST API
+## 5. DTO
 
-### 5.1 Les APIs sont orientées ressources
+Un DTO par usage.
 
-Utiliser des noms de ressources, pas des verbes.
+Exemples :
+
+```text
+CreateUserRequest
+UpdateUserRequest
+UserResponse
+CreateAccountRequest
+AccountResponse
+CreateTransferRequest
+TransferResponse
+```
+
+Règles :
+
+- ne jamais exposer une Entity dans une réponse API ;
+- ne jamais accepter une Entity en entrée API ;
+- ne pas réutiliser un DTO de création pour une mise à jour ;
+- les DTO request portent les annotations de validation syntaxique ;
+- les DTO response ne contiennent que les données nécessaires au client.
+
+---
+
+## 6. Validation
+
+Toutes les entrées API doivent être validées avec Bean Validation.
+
+Annotations usuelles :
+
+```text
+@NotNull
+@NotBlank
+@Email
+@Positive
+@Size
+```
+
+Exemple :
+
+```java
+public record CreateUserRequest(
+    @NotBlank String firstname,
+    @NotBlank String lastname,
+    @Email @NotBlank String email
+) {}
+```
+
+Règles :
+
+- les validations simples restent dans les DTO ;
+- les règles métier fortes restent dans le domaine ;
+- ne jamais se contenter des annotations pour une règle métier bancaire ;
+- toute règle métier critique doit avoir un test unitaire.
+
+---
+
+## 7. REST API design
+
+### 7.1 Ressources, pas actions
 
 Bon :
 
 ```http
-GET /accounts
-POST /accounts
-GET /accounts/{account_id}
+GET /users
+POST /users
+GET /users/{user_id}
 POST /transfers
 ```
 
 Mauvais :
 
 ```http
-POST /create-account
+POST /create-user
 POST /execute-transfer
 GET /get-user-details
 ```
 
----
-
-### 5.2 Utiliser des noms pluriels
-
-Les collections doivent être au pluriel.
+### 7.2 Collections au pluriel
 
 ```http
 /users
@@ -135,62 +239,27 @@ Les collections doivent être au pluriel.
 /audit-events
 ```
 
----
-
-### 5.3 Utiliser le kebab-case dans les chemins
+### 7.3 Chemins en kebab-case
 
 ```http
-/account-statements
 /approval-requests
 /audit-events
+/account-statements
 ```
 
-Ne pas utiliser :
-
-```http
-/accountStatements
-/approval_requests
-/AuditEvents
-```
-
----
-
-### 5.4 Utiliser snake_case pour les query parameters
-
-Bon :
+### 7.4 Query parameters en snake_case
 
 ```http
 GET /transfers?account_id=123&created_after=2026-01-01&status=EXECUTED
 ```
 
-Mauvais :
-
-```http
-GET /transfers?accountId=123&createdAfter=2026-01-01
-```
-
----
-
-### 5.5 Éviter les URLs trop profondes
+### 7.5 URLs peu profondes
 
 Maximum recommandé : trois niveaux de sous-ressources.
 
-Acceptable :
-
-```http
-GET /customers/{customer_id}/accounts
-GET /accounts/{account_id}/transactions
-```
-
-À éviter :
-
-```http
-GET /customers/{customer_id}/accounts/{account_id}/transactions/{transaction_id}/events
-```
-
 ---
 
-## 6. Méthodes HTTP
+## 8. Méthodes HTTP
 
 | Méthode | Usage |
 |---|---|
@@ -204,13 +273,12 @@ Règles :
 
 - `GET` ne modifie jamais l'état serveur ;
 - `PUT` doit être idempotent ;
-- `DELETE` doit privilégier la suppression logique pour les données bancaires ;
-- `POST` peut être utilisé pour les opérations métier non idempotentes ;
-- les traitements longs doivent retourner `202 Accepted` avec un endpoint de suivi.
+- `DELETE` privilégie la suppression logique pour les données bancaires ;
+- les traitements longs retournent `202 Accepted` avec un endpoint de suivi.
 
 ---
 
-## 7. Codes HTTP standards
+## 9. Codes HTTP standards
 
 | Code | Usage |
 |---|---|
@@ -230,67 +298,34 @@ Règles :
 
 ---
 
-## 8. Format des réponses JSON
+## 10. Format d'erreur unique
 
-Les réponses doivent être stables, lisibles et prévisibles.
+La gestion des erreurs est centralisée avec `@ControllerAdvice`.
 
-Exemple ressource :
-
-```json
-{
-  "id": "acc_123456",
-  "iban": "FR7612345678901234567890185",
-  "status": "ACTIVE",
-  "currency": "EUR",
-  "balance": {
-    "amount": "1200.50",
-    "currency": "EUR"
-  },
-  "created_at": "2026-06-20T10:15:30Z"
-}
-```
-
-Règles :
-
-- JSON uniquement pour les APIs métier ;
-- propriétés JSON en `snake_case` ;
-- dates en ISO 8601 UTC ;
-- montants financiers en string ou decimal contrôlé ;
-- devise en ISO 4217 ;
-- enums en UPPER_SNAKE_CASE ;
-- ne jamais exposer une entité JPA directement.
-
----
-
-## 9. Gestion des erreurs
-
-Toutes les erreurs doivent respecter un format commun.
+Format :
 
 ```json
 {
-  "type": "https://banking-simulation/errors/insufficient-funds",
-  "title": "Insufficient funds",
-  "status": 422,
-  "detail": "The account balance is not sufficient to execute this withdrawal.",
-  "instance": "/withdrawals/wdr_123456",
-  "code": "INSUFFICIENT_FUNDS",
-  "correlation_id": "cor_789456"
+  "code": "ACCOUNT_NOT_ACTIVE",
+  "message": "Le compte n'est pas actif",
+  "timestamp": "2026-06-20T10:15:30Z",
+  "correlationId": "cor_123456"
 }
 ```
 
 Règles :
 
 - ne jamais exposer de stack trace au client ;
-- toujours retourner un `correlation_id` ;
-- utiliser un code métier stable ;
+- retourner un code fonctionnel stable ;
+- retourner un `correlationId` ;
 - documenter les erreurs dans OpenAPI ;
 - distinguer erreur technique et erreur métier.
 
 ---
 
-## 10. Pagination, tri et filtrage
+## 11. Pagination, tri et filtrage
 
-Toutes les collections exposées doivent supporter la pagination.
+Toutes les listes doivent être paginées.
 
 Exemple :
 
@@ -300,31 +335,17 @@ GET /transactions?account_id=acc_123&limit=25&offset=0&sort=-created_at
 
 Règles :
 
-- `limit` obligatoire avec valeur par défaut ;
-- `offset` accepté pour le MVP ;
-- pagination par curseur possible dans une version avancée ;
-- imposer une limite maximale ;
-- filtrage explicite par query parameters ;
-- tri via `sort`.
-
-Réponse paginée :
-
-```json
-{
-  "items": [],
-  "pagination": {
-    "limit": 25,
-    "offset": 0,
-    "next_offset": 25
-  }
-}
-```
+- valeur par défaut pour `limit` ;
+- limite maximale imposée ;
+- filtrage explicite ;
+- tri via `sort` ;
+- pagination par curseur possible dans une version avancée.
 
 ---
 
-## 11. Idempotence
+## 12. Idempotence
 
-Les opérations sensibles doivent prévoir l'idempotence.
+Les opérations financières doivent supporter l'idempotence.
 
 Header recommandé :
 
@@ -349,21 +370,18 @@ Une même requête avec la même Idempotency-Key ne doit pas produire deux opér
 
 ---
 
-## 12. Sécurité backend
+## 13. Security rules essentielles
 
-Chaque endpoint doit être sécurisé par défaut.
+### 13.1 Authentification
 
-Règles :
+- toutes les APIs sont protégées par JWT / OAuth2 / OIDC ;
+- aucun endpoint métier ne doit être public ;
+- les tokens sont validés côté API Gateway et côté service sensible ;
+- HTTPS obligatoire en environnement exposé.
 
-- OAuth2 / OIDC / JWT ;
-- validation du token côté API Gateway et/ou service ;
-- RBAC via rôles applicatifs ;
-- contrôle métier côté service, pas seulement côté frontend ;
-- aucun secret dans le code ;
-- mots de passe jamais loggés ;
-- données sensibles masquées dans les logs.
+### 13.2 Autorisation
 
-Rôles :
+Contrôle par rôle :
 
 ```text
 ROLE_CLIENT
@@ -372,128 +390,99 @@ ROLE_ADVISOR
 ROLE_ADMIN
 ```
 
----
+Règles :
 
-## 13. Validation des entrées
+- vérifier l'accès à chaque ressource par propriétaire ;
+- un client ne peut jamais consulter un compte qui ne lui appartient pas ;
+- les contrôles d'autorisation ne doivent jamais reposer seulement sur le frontend ;
+- les endpoints advisor/admin nécessitent un rôle dédié.
 
-Chaque entrée API doit être validée.
+### 13.3 Données sensibles
+
+Ne jamais journaliser :
+
+- mot de passe ;
+- token d'accès ;
+- token de renouvellement ;
+- numéro complet de carte ;
+- données personnelles sensibles.
 
 Règles :
 
-- Bean Validation obligatoire sur les DTO request ;
-- validation métier dans le domaine ou application service ;
-- aucune confiance envers les données du frontend ;
-- messages d'erreur explicites ;
-- contraintes OpenAPI alignées avec les validations Java.
+- masquer les IBAN et identifiants sensibles dans les journaux ;
+- ne jamais retourner de secret dans une réponse API ;
+- limiter les données retournées au strict nécessaire.
 
-Exemple :
+### 13.4 Secrets
 
-```java
-public record CreateAccountRequest(
-    @NotBlank String ownerId,
-    @NotBlank String currency
-) {}
-```
+- aucun secret dans GitHub ;
+- utiliser variables d'environnement, Kubernetes Secrets ou Vault ;
+- prévoir une rotation des secrets ;
+- séparer les secrets par environnement.
+
+### 13.5 Protection API
+
+- rate limiting obligatoire ;
+- pagination obligatoire sur les listes ;
+- taille maximale des payloads ;
+- timeout sur appels inter-services ;
+- protection contre injection SQL via JPA et requêtes paramétrées ;
+- protection contre mass assignment : ne jamais binder directement un DTO non contrôlé vers une entité.
 
 ---
 
-## 14. DTO, entities et domain models
+## 14. Audit
 
-Séparation obligatoire :
+Chaque opération sensible doit produire un audit :
 
 ```text
-Request DTO != Domain Model != JPA Entity != Response DTO
+connexion
+création compte
+dépôt
+retrait
+virement
+validation conseiller
+refus conseiller
+action admin
 ```
-
-Règles :
-
-- les controllers manipulent des DTO ;
-- l'application layer manipule des commands / queries ;
-- le domain layer manipule des objets métier ;
-- l'infrastructure manipule les entités JPA ;
-- les mappers sont explicites.
-
----
-
-## 15. Repositories
-
-Le domaine expose une interface repository.
-
-```java
-public interface AccountRepository {
-    Optional<Account> findById(AccountId accountId);
-    Account save(Account account);
-}
-```
-
-L'implémentation JPA reste dans l'infrastructure.
-
-```text
-domain/repository/AccountRepository.java
-infrastructure/persistence/adapter/JpaAccountRepositoryAdapter.java
-infrastructure/persistence/jpa/SpringDataAccountJpaRepository.java
-```
-
----
-
-## 16. Transactions
-
-Règles :
-
-- transaction applicative au niveau use case ;
-- pas de transaction ouverte dans les controllers ;
-- pas de logique métier dans les repositories ;
-- une opération financière doit être atomique ;
-- les événements externes doivent être publiés après validation de la transaction.
-
----
-
-## 17. Observabilité backend
-
-Chaque API doit produire :
-
-- logs structurés ;
-- audit métier ;
-- correlationId ;
-- métriques ;
-- traces techniques.
 
 Champs minimaux :
 
 ```json
 {
   "timestamp": "2026-06-20T10:15:30Z",
-  "level": "INFO",
   "service": "core-banking-api",
-  "correlation_id": "cor_123456",
-  "user_id": "usr_123456",
+  "correlationId": "cor_123456",
+  "userId": "usr_123456",
   "action": "TRANSFER_CREATED",
   "result": "SUCCESS"
 }
 ```
 
+---
+
+## 15. Transactions
+
 Règles :
 
-- aucun log de mot de passe, token ou secret ;
-- masquer IBAN complet si nécessaire ;
-- tracer les opérations sensibles ;
-- un audit métier ne doit pas être modifiable ;
-- une erreur d'observabilité ne doit pas bloquer le métier.
+- transaction applicative au niveau Facade / UseCase ;
+- pas de transaction ouverte dans les controllers ;
+- pas de logique métier dans les repositories ;
+- une opération financière doit être atomique ;
+- les événements externes sont publiés après validation de la transaction.
 
 ---
 
-## 18. Tests backend
+## 16. Tests backend
 
-Niveaux attendus :
+Règles :
 
-- tests unitaires domaine ;
-- tests application use cases ;
-- tests controllers ;
-- tests repositories ;
-- tests d'intégration avec Testcontainers ;
-- tests de contrat OpenAPI à terme.
+- test unitaire obligatoire pour chaque règle métier ;
+- test d'intégration pour chaque endpoint critique ;
+- Testcontainers pour PostgreSQL, Kafka et ClickHouse ;
+- aucun merge sans tests verts.
 
-Outils recommandés :
+Outils :
 
 ```text
 JUnit 5
@@ -504,69 +493,38 @@ Spring Boot Test
 REST Assured
 ```
 
-Règles :
-
-- tester les règles métier dans le domaine ;
-- tester les transitions d'état ;
-- tester les erreurs métier ;
-- tester l'idempotence des opérations financières ;
-- ne pas dépendre d'une base locale installée manuellement.
-
 ---
 
-## 19. Documentation API
+## 17. CI/CD sécurité
 
-Chaque API doit exposer ou fournir :
+Le pipeline doit prévoir :
 
-- OpenAPI YAML ;
-- description du scope ;
-- exemples de requêtes ;
-- exemples de réponses ;
-- erreurs possibles ;
-- règles d'autorisation ;
-- pagination ;
-- filtres ;
-- événements produits.
+- scan dépendances ;
+- scan image Docker ;
+- analyse statique ;
+- exécution des tests ;
+- blocage merge si vulnérabilité critique ;
+- branch protection sur `main`.
 
-Emplacement recommandé :
+Règle :
 
 ```text
-docs/api-contracts/<service-name>/openapi.yaml
+La sécurité est intégrée dans tout le cycle de développement, pas seulement en fin de projet.
 ```
 
 ---
 
-## 20. Git et commits
+## 18. Checklist backend avant merge
 
-Règles :
-
-- commits en anglais ;
-- Conventional Commits ;
-- messages en lowercase sauf nom technique entre backticks ;
-- une PR = un objectif clair ;
-- pas de mélange backend/frontend/infra sans raison.
-
-Exemples :
-
-```bash
-git commit -m "feat(user): add create user use case"
-git commit -m "fix(account): prevent closed account debit"
-git commit -m "docs(api): add transfer endpoint contract"
-```
-
----
-
-## 21. Checklist backend avant merge
-
-Avant de merger une PR backend :
-
-- [ ] Le code respecte l'architecture hexagonale.
-- [ ] Les DTO ne sont pas des entités JPA.
-- [ ] Les endpoints sont documentés.
-- [ ] Les erreurs suivent le format standard.
-- [ ] Les tests unitaires passent.
+- [ ] Architecture Controller -> Facade -> Service -> Repository -> Adapter respectée.
+- [ ] Le Controller ne contient pas de logique métier.
+- [ ] Le Service ne manipule pas d'Entity JPA.
+- [ ] Les DTO sont dédiés par usage.
+- [ ] Les entrées API sont validées.
+- [ ] Les erreurs passent par `@ControllerAdvice`.
 - [ ] Les règles métier sont testées.
-- [ ] Les logs ne contiennent pas de données sensibles.
-- [ ] Le correlationId est propagé.
-- [ ] Les endpoints sensibles sont sécurisés.
-- [ ] Les noms d'URLs sont orientés ressources.
+- [ ] Les endpoints critiques ont des tests d'intégration.
+- [ ] Les données sensibles ne sont pas journalisées.
+- [ ] Le correlationId est présent.
+- [ ] Les endpoints métier sont sécurisés.
+- [ ] Le pipeline CI est vert.
