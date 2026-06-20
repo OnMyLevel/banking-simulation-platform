@@ -4,8 +4,10 @@ import com.banking.account.domain.model.Account;
 import com.banking.account.domain.repository.AccountRepository;
 import com.banking.account.infrastructure.persistence.jpa.AccountJpaRepository;
 import com.banking.account.infrastructure.persistence.mapper.AccountMapper;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,5 +27,14 @@ public class AccountJpaAdapter implements AccountRepository {
     @Override
     public Optional<Account> findById(UUID accountId) {
         return accountJpaRepository.findById(accountId).map(AccountMapper::toDomain);
+    }
+
+    @Override
+    public List<Account> findByOwnerId(UUID ownerId, int limit, int offset) {
+        int page = offset / limit;
+        return accountJpaRepository.findByOwnerId(ownerId, PageRequest.of(page, limit))
+            .stream()
+            .map(AccountMapper::toDomain)
+            .toList();
     }
 }

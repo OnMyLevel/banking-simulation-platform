@@ -16,6 +16,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -57,5 +58,18 @@ class AccountJpaAdapterIntegrationTest {
 
         assertThat(result).isPresent();
         assertThat(result.get().ownerId()).isEqualTo(ownerId);
+    }
+
+    @Test
+    void shouldFindAccountsByOwner() {
+        UUID ownerId = UUID.randomUUID();
+        Instant now = Instant.now();
+        Account account = new Account(UUID.randomUUID(), ownerId, "FR7612345678901234567890186", AccountStatus.ACTIVE, new Money(BigDecimal.ZERO, "EUR"), now, now);
+
+        accountJpaAdapter.persist(account);
+        List<Account> result = accountJpaAdapter.findByOwnerId(ownerId, 25, 0);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).ownerId()).isEqualTo(ownerId);
     }
 }
