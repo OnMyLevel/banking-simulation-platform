@@ -6,15 +6,8 @@ spring:
     name: account-banking-api
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: create-drop
     open-in-view: false
-    properties:
-      hibernate:
-        default_schema: account_schema
-  flyway:
-    enabled: true
-    schemas: account_schema
-    default-schema: account_schema
 
 management:
   endpoints:
