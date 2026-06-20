@@ -1,6 +1,5 @@
 package com.banking.user.infrastructure.persistence.mapper;
 
-import com.banking.user.domain.model.RoleName;
 import com.banking.user.domain.model.User;
 import com.banking.user.domain.model.UserStatus;
 import com.banking.user.infrastructure.persistence.entity.UserEntity;
@@ -29,7 +28,7 @@ public final class UserMapper {
             entity.getLastname(),
             entity.getEmail(),
             UserStatus.valueOf(entity.getStatus()),
-            entity.getRoles().stream().map(RoleName::valueOf).collect(java.util.stream.Collectors.toSet()),
+            entity.getRoles(),
             entity.getCreatedAt(),
             entity.getUpdatedAt()
         );
