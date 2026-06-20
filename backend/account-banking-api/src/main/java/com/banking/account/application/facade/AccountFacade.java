@@ -1,6 +1,7 @@
 package com.banking.account.application.facade;
 
 import com.banking.account.application.command.CreateAccountCommand;
+import com.banking.account.domain.exception.AccountNotFoundException;
 import com.banking.account.domain.model.Account;
 import com.banking.account.domain.repository.AccountRepository;
 import com.banking.account.domain.service.AccountService;
@@ -26,6 +27,7 @@ public class AccountFacade {
 
     @Transactional(readOnly = true)
     public Account getAccount(UUID accountId) {
-        return accountRepository.findById(accountId).orElseThrow();
+        return accountRepository.findById(accountId)
+            .orElseThrow(() -> new AccountNotFoundException(accountId));
     }
 }
