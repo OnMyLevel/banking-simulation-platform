@@ -31,6 +31,8 @@ GET /accounts/{accountId}
 - An account is created with a zero balance.
 - An account is created as ACTIVE.
 - Domain models are separated from JPA entities.
+- A missing account returns ACCOUNT_NOT_FOUND with HTTP 404.
+- Hibernate validates the schema; Flyway owns schema creation.
 
 ## Local run
 
@@ -48,13 +50,15 @@ Implemented foundation:
 - request and response DTOs
 - facade layer
 - JPA adapter layer
+- Flyway migration for account_schema.accounts
+- account not found exception and error handler
 - first unit tests
 - first controller test
 - first repository integration test with Testcontainers
 
 Next steps:
 
-- add business exceptions and global error handling
-- add Flyway migration when repository policy allows SQL migration file creation
+- add full business exceptions for account status rules
+- add owner access control
 - add security foundation
 - add OpenAPI contract
