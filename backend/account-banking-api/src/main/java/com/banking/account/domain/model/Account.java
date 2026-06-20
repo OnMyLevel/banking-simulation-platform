@@ -31,6 +31,10 @@ public class Account {
         return AccountStatus.ACTIVE.equals(status);
     }
 
+    public boolean isClosed() {
+        return AccountStatus.CLOSED.equals(status);
+    }
+
     public UUID id() { return id; }
     public UUID ownerId() { return ownerId; }
     public String iban() { return iban; }
