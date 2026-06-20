@@ -1,0 +1,23 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: account-banking-api
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        default_schema: account_schema
+  flyway:
+    enabled: true
+    schemas: account_schema
+    default-schema: account_schema
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

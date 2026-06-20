@@ -21,6 +21,7 @@ jobs:
       matrix:
         service:
           - user-management-api
+          - account-banking-api
     steps:
       - name: Checkout
         uses: actions/checkout@v4
