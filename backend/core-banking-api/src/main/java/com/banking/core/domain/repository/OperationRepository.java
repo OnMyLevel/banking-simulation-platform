@@ -11,5 +11,6 @@ public interface OperationRepository {
     Operation persist(Operation operation);
     Optional<Operation> findByIdempotencyKey(String idempotencyKey);
     List<Operation> findByAccountId(UUID accountId, int limit, int offset);
-    BigDecimal balanceOf(UUID accountId);
+    BigDecimal balanceOf(UUID accountId, String currency);
+    void guardAccount(UUID accountId);
 }
