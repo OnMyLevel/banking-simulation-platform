@@ -9,6 +9,30 @@ For each PR, document:
 - reasons and goals of the change;
 - architecture or behavior impact.
 
+## PR #14 - ci API checks workflow
+
+### Files changed
+
+- `.github/workflows/api-check.yml`
+- `tests/README.md`
+- `CHANGELOG.md`
+
+### Concepts and features
+
+- GitHub Actions API check workflow.
+- Automated Newman/Postman suite on pull requests.
+- Functional-only CI mode using the local Docker test runner.
+
+### Reasons and goals
+
+The local automated test suite should not depend only on manual execution. This PR makes the API regression suite run automatically on pull requests and pushes to `main`.
+
+### Architecture and behavior impact
+
+- Adds a CI quality gate for API regressions.
+- Keeps load and security checks available locally for now.
+- Does not change runtime behavior.
+
 ## PR #13 - docs test evolution strategy
 
 ### Files changed
