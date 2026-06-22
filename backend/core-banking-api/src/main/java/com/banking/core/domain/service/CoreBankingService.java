@@ -4,9 +4,11 @@ import com.banking.core.domain.exception.CoreAccountUnavailableException;
 import com.banking.core.domain.exception.IdempotencyKeyRequiredException;
 import com.banking.core.domain.exception.InsufficientFundsException;
 import com.banking.core.domain.model.AccountSnapshot;
+import com.banking.core.domain.model.AuditEvent;
 import com.banking.core.domain.model.Money;
 import com.banking.core.domain.model.Operation;
 import com.banking.core.domain.port.AccountClient;
+import com.banking.core.domain.port.AuditPublisher;
 import com.banking.core.domain.repository.OperationRepository;
 
 import java.util.List;
@@ -15,10 +17,12 @@ import java.util.UUID;
 public class CoreBankingService {
     private final OperationRepository operationRepository;
     private final AccountClient accountClient;
+    private final AuditPublisher auditPublisher;
 
-    public CoreBankingService(OperationRepository operationRepository, AccountClient accountClient) {
+    public CoreBankingService(OperationRepository operationRepository, AccountClient accountClient, AuditPublisher auditPublisher) {
         this.operationRepository = operationRepository;
         this.accountClient = accountClient;
+        this.auditPublisher = auditPublisher;
     }
 
     public Operation credit(UUID accountId, Money money, String idempotencyKey) {
@@ -27,7 +31,9 @@ public class CoreBankingService {
             .orElseGet(() -> {
                 checkAccount(accountId);
                 operationRepository.guardAccount(accountId);
-                return operationRepository.persist(Operation.credit(accountId, money, idempotencyKey));
+                Operation operation = operationRepository.persist(Operation.credit(accountId, money, idempotencyKey));
+                recordAudit(operation);
+                return operation;
             });
     }
 
@@ -38,7 +44,9 @@ public class CoreBankingService {
                 checkAccount(accountId);
                 operationRepository.guardAccount(accountId);
                 ensureEnoughFunds(accountId, money);
-                return operationRepository.persist(Operation.debit(accountId, money, idempotencyKey));
+                Operation operation = operationRepository.persist(Operation.debit(accountId, money, idempotencyKey));
+                recordAudit(operation);
+                return operation;
             });
     }
 
@@ -50,7 +58,9 @@ public class CoreBankingService {
                 checkAccount(targetAccountId);
                 guardTransferAccounts(sourceAccountId, targetAccountId);
                 ensureEnoughFunds(sourceAccountId, money);
-                return operationRepository.persist(Operation.transfer(sourceAccountId, targetAccountId, money, idempotencyKey));
+                Operation operation = operationRepository.persist(Operation.transfer(sourceAccountId, targetAccountId, money, idempotencyKey));
+                recordAudit(operation);
+                return operation;
             });
     }
 
@@ -69,6 +79,10 @@ public class CoreBankingService {
         if (!account.isActive()) {
             throw new CoreAccountUnavailableException(accountId);
         }
+    }
+
+    private void recordAudit(Operation operation) {
+        auditPublisher.publish(AuditEvent.from(operation));
     }
 
     private void ensureEnoughFunds(UUID accountId, Money money) {
