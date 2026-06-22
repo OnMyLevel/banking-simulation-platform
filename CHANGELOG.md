@@ -9,6 +9,35 @@ For each PR, document:
 - reasons and goals of the change;
 - architecture or behavior impact.
 
+## PR #10 - feat core resilience
+
+### Files changed
+
+- `backend/core-banking-api/src/main/java/com/banking/core/infrastructure/account/AccountClientProperties.java`
+- `backend/core-banking-api/src/main/java/com/banking/core/infrastructure/account/AccountClientConfiguration.java`
+- `backend/core-banking-api/src/main/java/com/banking/core/infrastructure/account/HttpAccountClient.java`
+- `backend/core-banking-api/src/main/resources/application.yml`
+- `backend/core-banking-api/src/main/resources/application-docker.yml`
+- `backend/core-banking-api/src/test/java/com/banking/core/infrastructure/account/HttpAccountClientTest.java`
+- `backend/core-banking-api/README.md`
+
+### Concepts and features
+
+- HTTP client connect timeout.
+- HTTP client read timeout.
+- More explicit remote account error handling.
+- Unit tests for the account HTTP adapter.
+
+### Reasons and goals
+
+Core Banking API depends on Account Banking API before executing sensitive operations. This PR avoids unbounded waiting and makes remote dependency failures explicit.
+
+### Architecture and behavior impact
+
+- Keeps account dependency handling inside the infrastructure adapter.
+- Adds configurable timeout values for local and Docker profiles.
+- Maps missing accounts and remote service errors consistently.
+
 ## PR #9 - feat core account status checks
 
 ### Files changed
