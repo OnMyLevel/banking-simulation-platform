@@ -1,5 +1,8 @@
 package com.banking.core.api.error;
 
+import com.banking.core.domain.exception.AccountServiceUnavailableException;
+import com.banking.core.domain.exception.CoreAccountNotFoundException;
+import com.banking.core.domain.exception.CoreAccountUnavailableException;
 import com.banking.core.domain.exception.IdempotencyKeyRequiredException;
 import com.banking.core.domain.exception.InsufficientFundsException;
 import org.springframework.http.HttpStatus;
@@ -23,6 +26,24 @@ public class CoreExceptionHandler {
     @ResponseStatus(HttpStatus.CONFLICT)
     public CoreErrorResponse handleBalanceError(InsufficientFundsException ex) {
         return error("INSUFFICIENT_FUNDS", ex.getMessage());
+    }
+
+    @ExceptionHandler(CoreAccountNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public CoreErrorResponse handleAccountNotFound(CoreAccountNotFoundException ex) {
+        return error("ACCOUNT_NOT_FOUND", ex.getMessage());
+    }
+
+    @ExceptionHandler(CoreAccountUnavailableException.class)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    public CoreErrorResponse handleAccountUnavailable(CoreAccountUnavailableException ex) {
+        return error("ACCOUNT_NOT_ACTIVE", ex.getMessage());
+    }
+
+    @ExceptionHandler(AccountServiceUnavailableException.class)
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    public CoreErrorResponse handleAccountServiceUnavailable(AccountServiceUnavailableException ex) {
+        return error("ACCOUNT_SERVICE_UNAVAILABLE", ex.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
