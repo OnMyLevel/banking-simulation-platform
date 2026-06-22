@@ -41,9 +41,9 @@ public class OperationJpaAdapter implements OperationRepository {
     }
 
     @Override
-    public BigDecimal balanceOf(UUID accountId) {
+    public BigDecimal balanceOf(UUID accountId, String currency) {
         BigDecimal balance = BigDecimal.ZERO;
-        for (OperationEntity operation : operationJpaRepository.findAllByAccountId(accountId)) {
+        for (OperationEntity operation : operationJpaRepository.findAllByAccountIdAndCurrency(accountId, currency)) {
             if (accountId.equals(operation.targetAccountId)) {
                 balance = balance.add(operation.amount);
             }
@@ -52,5 +52,10 @@ public class OperationJpaAdapter implements OperationRepository {
             }
         }
         return balance;
+    }
+
+    @Override
+    public void guardAccount(UUID accountId) {
+        operationJpaRepository.guardAccount(accountId);
     }
 }
