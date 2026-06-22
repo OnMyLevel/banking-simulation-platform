@@ -53,6 +53,13 @@ Docker URL:
 http://account-banking-api:8082
 ```
 
+Configured client defaults:
+
+```text
+connect-timeout: 1s
+read-timeout: 2s
+```
+
 ## Business rules covered
 
 - A credit operation requires the target account to be ACTIVE.
@@ -76,6 +83,8 @@ Implemented foundation:
 - facade layer
 - domain service
 - account client port and HTTP adapter
+- HTTP timeout configuration
+- account dependency error mapping
 - repository port
 - JPA adapter layer
 - Flyway migration for `core_schema.operations`
@@ -84,6 +93,7 @@ Implemented foundation:
 - currency-specific balance projection from operations
 - account status checks before credit, debit and transfer
 - unit tests for idempotency, balance and account status rules
+- HTTP account adapter tests
 - Testcontainers repository integration test
 - OpenAPI contract
 
@@ -93,4 +103,4 @@ Implemented foundation:
 - add richer OpenAPI examples
 - expose paginated history parameters at REST level
 - update project changelog
-- add resilience timeout and retry policy for Account Banking API calls
+- add retry policy later if real failure patterns justify it
