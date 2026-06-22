@@ -59,15 +59,18 @@ class OperationJpaAdapterIntegrationTest {
     }
 
     @Test
-    void shouldCalculateBalanceFromOperations() {
+    void shouldCalculateBalanceFromOperationsByCurrency() {
         UUID accountId = UUID.randomUUID();
         operationJpaAdapter.persist(Operation.credit(accountId, Money.of(BigDecimal.TEN, "EUR"), "key-it-2"));
         operationJpaAdapter.persist(Operation.debit(accountId, Money.of(BigDecimal.ONE, "EUR"), "key-it-3"));
+        operationJpaAdapter.persist(Operation.credit(accountId, Money.of(BigDecimal.TEN, "USD"), "key-it-4"));
 
-        BigDecimal balance = operationJpaAdapter.balanceOf(accountId);
+        BigDecimal eurBalance = operationJpaAdapter.balanceOf(accountId, "EUR");
+        BigDecimal usdBalance = operationJpaAdapter.balanceOf(accountId, "USD");
         List<Operation> history = operationJpaAdapter.findByAccountId(accountId, 25, 0);
 
-        assertThat(balance).isEqualByComparingTo("9.00");
-        assertThat(history).hasSize(2);
+        assertThat(eurBalance).isEqualByComparingTo("9.00");
+        assertThat(usdBalance).isEqualByComparingTo("10.00");
+        assertThat(history).hasSize(3);
     }
 }
