@@ -1,0 +1,23 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: core-banking-api
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        default_schema: core_schema
+  flyway:
+    enabled: true
+    schemas: core_schema
+    default-schema: core_schema
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
