@@ -2,6 +2,7 @@ package com.banking.core.application.facade;
 
 import com.banking.core.domain.model.Money;
 import com.banking.core.domain.model.Operation;
+import com.banking.core.domain.port.AccountClient;
 import com.banking.core.domain.repository.OperationRepository;
 import com.banking.core.domain.service.CoreBankingService;
 import org.springframework.stereotype.Service;
@@ -14,8 +15,8 @@ import java.util.UUID;
 public class CoreBankingFacade {
     private final CoreBankingService coreBankingService;
 
-    public CoreBankingFacade(OperationRepository operationRepository) {
-        this.coreBankingService = new CoreBankingService(operationRepository);
+    public CoreBankingFacade(OperationRepository operationRepository, AccountClient accountClient) {
+        this.coreBankingService = new CoreBankingService(operationRepository, accountClient);
     }
 
     @Transactional
