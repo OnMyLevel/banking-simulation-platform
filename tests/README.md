@@ -45,6 +45,48 @@ curl 'http://localhost:8083/operations/accounts/00000000-0000-0000-0000-00000000
 - Newman JUnit report: `tests/postman/results/newman-results.xml`
 - ZAP report: `tests/security/zap-report.html`
 
+## Evolution strategy
+
+This test suite is not frozen. It must evolve with the product.
+
+Every backend PR that adds or changes an API, business rule, error code, security rule, or cross-service dependency should update the automated tests in the same PR.
+
+### Required update rules
+
+- New endpoint: add at least one functional Newman scenario.
+- New business rule: add one success case and one failure case.
+- New error code: assert the HTTP status and the response `code` field.
+- New service dependency: add a failure scenario for unavailable dependency or invalid response.
+- New pagination, filtering, or sorting: add boundary tests for minimum, maximum, and default values.
+- New security rule: add a security or negative API test.
+- New performance-sensitive endpoint: add or extend a k6 scenario.
+
+### Naming convention
+
+Functional test names should follow this pattern:
+
+```text
+<Context> - <Behavior> - <Expected result>
+```
+
+Examples:
+
+```text
+Core - Debit source account - created
+Core - Missing Idempotency-Key - rejected
+Account - Get missing account - not found
+```
+
+### Test ownership
+
+The `tests/` folder is the executable regression suite for the platform. It should be treated like production code:
+
+- reviewed in PRs;
+- kept readable;
+- updated with each functional change;
+- run before merging important backend changes;
+- extended before large refactors.
+
 ## Test categories
 
 ### Functional tests

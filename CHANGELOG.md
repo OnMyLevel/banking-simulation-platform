@@ -9,6 +9,30 @@ For each PR, document:
 - reasons and goals of the change;
 - architecture or behavior impact.
 
+## PR #13 - docs test evolution strategy
+
+### Files changed
+
+- `tests/README.md`
+- `CHANGELOG.md`
+
+### Concepts and features
+
+- Continuous evolution strategy for automated tests.
+- Required test update rules for future backend PRs.
+- Naming convention for functional scenarios.
+- Test ownership guidance.
+
+### Reasons and goals
+
+The local test suite introduced in PR #12 must evolve with the product. This PR documents how each future API, business rule, error code, security rule, or service dependency change should update automated tests.
+
+### Architecture and behavior impact
+
+- Establishes `tests/` as the executable regression suite for the platform.
+- Makes test maintenance part of the regular PR workflow.
+- Does not change runtime behavior.
+
 ## PR #12 - test local automation suite
 
 ### Files changed
