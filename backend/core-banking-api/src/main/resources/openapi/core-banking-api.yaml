@@ -56,6 +56,63 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 25
+            minimum: 1
+            maximum: 100
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
       responses:
         '200':
           description: Operation history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationHistoryResponse'
+components:
+  schemas:
+    OperationHistoryResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationResponse'
+        limit:
+          type: integer
+        offset:
+          type: integer
+        nextOffset:
+          type: integer
+    OperationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        sourceAccountId:
+          type: string
+          format: uuid
+        targetAccountId:
+          type: string
+          format: uuid
+        kind:
+          type: string
+        status:
+          type: string
+        amount:
+          type: string
+        currency:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
