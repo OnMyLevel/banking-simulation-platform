@@ -12,7 +12,7 @@ Core banking operation service for the Banking Simulation Platform.
 - guarded balance checks
 - currency-specific balance projection
 - account status validation
-- audit foundation
+- audit event foundation
 
 ## Architecture rule
 
@@ -70,6 +70,7 @@ read-timeout: 2s
 - Missing Idempotency-Key returns an explicit API error.
 - Balance projection is computed from existing operations and filtered by currency.
 - Operation history is paginated with limit, offset and nextOffset.
+- Successful credit, debit and transfer operations create an audit event through `AuditPublisher`.
 
 ## Current status
 
@@ -81,6 +82,8 @@ Implemented foundation:
 - facade layer
 - domain service
 - account client port and HTTP adapter
+- audit publisher port
+- no-op audit publisher adapter
 - HTTP timeout configuration
 - account dependency error mapping
 - repository port
@@ -91,14 +94,14 @@ Implemented foundation:
 - currency-specific balance projection from operations
 - account status checks before credit, debit and transfer
 - paginated operation history response
-- unit tests for idempotency, balance and account status rules
+- audit event creation after successful operations
+- unit tests for idempotency, balance, account status and audit rules
 - HTTP account adapter tests
 - Testcontainers repository integration test
 - OpenAPI contract
 
 ## Next steps
 
-- add operation audit events
+- connect AuditPublisher to observability-api or an event broker
 - add richer OpenAPI examples
-- update project changelog
 - add retry policy later if real failure patterns justify it
