@@ -24,18 +24,22 @@ For each PR, document:
 ### Concepts and features
 
 - Balance projection from existing operations.
+- Currency-specific balance checks.
+- Account-level transactional guard before debit and transfer balance validation.
 - Insufficient funds rule for debit and transfer operations.
 - Repository integration test with Testcontainers.
 - OpenAPI contract for core banking operations.
 
 ### Reasons and goals
 
-This PR moves core banking from a basic operation recording service to a first business-ready foundation. It prevents debit and transfer operations from creating negative balances.
+This PR moves core banking from a basic operation recording service to a first business-ready foundation. It prevents debit and transfer operations from creating negative balances, including under concurrent requests for the same account, and avoids mixing balances across currencies.
 
 ### Architecture and behavior impact
 
 - Adds balance projection to the repository port.
 - Keeps balance validation in the domain service.
+- Adds a repository-level account guard for sensitive balance checks.
+- Filters balance projections by currency.
 - Adds API error mapping for insufficient funds.
 - Documents the core banking contract.
 
