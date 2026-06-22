@@ -1,6 +1,7 @@
 package com.banking.core.api.error;
 
 import com.banking.core.domain.exception.IdempotencyKeyRequiredException;
+import com.banking.core.domain.exception.InsufficientFundsException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -16,6 +17,12 @@ public class CoreExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public CoreErrorResponse handleMissingIdempotencyKey(IdempotencyKeyRequiredException ex) {
         return error("IDEMPOTENCY_KEY_REQUIRED", ex.getMessage());
+    }
+
+    @ExceptionHandler(InsufficientFundsException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public CoreErrorResponse handleBalanceError(InsufficientFundsException ex) {
+        return error("INSUFFICIENT_FUNDS", ex.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

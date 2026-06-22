@@ -9,6 +9,8 @@ Core banking operation service for the Banking Simulation Platform.
 - internal transfers
 - operation history
 - idempotency protection
+- guarded balance checks
+- currency-specific balance projection
 - audit foundation
 
 ## Architecture rule
@@ -34,13 +36,16 @@ Sensitive write endpoints require:
 Idempotency-Key: unique-client-operation-key
 ```
 
-## Business rules covered in foundation
+## Business rules covered
 
 - A credit operation creates one completed operation.
-- A debit operation creates one completed operation.
-- A transfer operation links a source and target account.
+- A debit operation creates one completed operation only if the account has enough available balance in the requested currency.
+- A transfer operation debits the source account and credits the target account through the same operation record.
+- A transfer is rejected when the source account has insufficient funds in the requested currency.
+- Debit and transfer balance checks are protected by an account-level transactional guard.
 - A duplicated Idempotency-Key returns the existing operation instead of creating a second one.
 - Missing Idempotency-Key returns an explicit API error.
+- Balance projection is computed from existing operations and filtered by currency.
 
 ## Current status
 
@@ -54,13 +59,17 @@ Implemented foundation:
 - repository port
 - JPA adapter layer
 - Flyway migration for `core_schema.operations`
-- first unit tests for idempotency behavior
+- insufficient funds rule
+- guarded balance checks
+- currency-specific balance projection from operations
+- unit tests for idempotency and balance rules
+- Testcontainers repository integration test
+- OpenAPI contract
 
 ## Next steps
 
 - connect to account-banking-api for account status checks
-- add balance projection or account ledger
-- add insufficient funds rule
 - add operation audit events
-- add Testcontainers repository integration test
-- add OpenAPI contract
+- add richer OpenAPI examples
+- expose paginated history parameters at REST level
+- update project changelog

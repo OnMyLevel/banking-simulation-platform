@@ -9,6 +9,86 @@ For each PR, document:
 - reasons and goals of the change;
 - architecture or behavior impact.
 
+## PR #8 - feat core banking business rules
+
+### Files changed
+
+- `backend/core-banking-api/src/main/java/com/banking/core/domain/service/CoreBankingService.java`
+- `backend/core-banking-api/src/main/java/com/banking/core/domain/exception/InsufficientFundsException.java`
+- `backend/core-banking-api/src/main/java/com/banking/core/domain/repository/OperationRepository.java`
+- `backend/core-banking-api/src/main/java/com/banking/core/infrastructure/persistence/**`
+- `backend/core-banking-api/src/test/java/com/banking/core/**`
+- `backend/core-banking-api/src/main/resources/openapi/core-banking-api.yaml`
+- `backend/core-banking-api/README.md`
+
+### Concepts and features
+
+- Balance projection from existing operations.
+- Currency-specific balance checks.
+- Account-level transactional guard before debit and transfer balance validation.
+- Insufficient funds rule for debit and transfer operations.
+- Repository integration test with Testcontainers.
+- OpenAPI contract for core banking operations.
+
+### Reasons and goals
+
+This PR moves core banking from a basic operation recording service to a first business-ready foundation. It prevents debit and transfer operations from creating negative balances, including under concurrent requests for the same account, and avoids mixing balances across currencies.
+
+### Architecture and behavior impact
+
+- Adds balance projection to the repository port.
+- Keeps balance validation in the domain service.
+- Adds a repository-level account guard for sensitive balance checks.
+- Filters balance projections by currency.
+- Adds API error mapping for insufficient funds.
+- Documents the core banking contract.
+
+## PR #7 - feat core banking API foundation
+
+### Files changed
+
+- `backend/core-banking-api/**`
+- `.github/workflows/dev-to-main.yml`
+
+### Concepts and features
+
+- Spring Boot foundation for Core Banking API.
+- Operation domain model.
+- Credit, debit, transfer, and history endpoints.
+- Idempotency-Key support for write operations.
+- JPA adapter and Flyway migration for `core_schema.operations`.
+
+### Reasons and goals
+
+This PR starts the banking operation context. It provides the first technical foundation for recording core banking operations.
+
+### Architecture and behavior impact
+
+- Adds the third backend service.
+- Introduces operation history persistence.
+- Adds idempotency protection to avoid duplicate operation execution.
+- Extends CI validation to include `core-banking-api`.
+
+## PR #6 - docs add project changelog
+
+### Files changed
+
+- `CHANGELOG.md`
+
+### Concepts and features
+
+- Project changelog by pull request.
+- Structured history for files, concepts, goals, and impacts.
+
+### Reasons and goals
+
+The project needs a clear, readable history of architecture and code decisions to support reviews and onboarding.
+
+### Architecture and behavior impact
+
+- Improves project documentation and traceability.
+- Does not change runtime behavior.
+
 ## PR #5 - feat account banking list endpoint
 
 ### Files changed

@@ -1,0 +1,61 @@
+openapi: 3.0.3
+info:
+  title: Core Banking API
+  version: 0.1.0
+  description: Core banking operations API for Banking Simulation Platform.
+paths:
+  /operations/credits:
+    post:
+      summary: Create a credit operation
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Credit operation created
+        '400':
+          description: Invalid request or missing idempotency key
+  /operations/debits:
+    post:
+      summary: Create a debit operation
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Debit operation created
+        '409':
+          description: Insufficient funds
+  /operations/transfers:
+    post:
+      summary: Create an internal transfer operation
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Transfer operation created
+        '409':
+          description: Insufficient funds
+  /operations/accounts/{accountId}:
+    get:
+      summary: Get operation history for an account
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Operation history
