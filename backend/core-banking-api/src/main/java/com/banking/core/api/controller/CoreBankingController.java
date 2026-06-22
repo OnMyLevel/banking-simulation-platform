@@ -4,6 +4,7 @@ import com.banking.core.api.mapper.CoreApiMapper;
 import com.banking.core.api.request.CreditRequest;
 import com.banking.core.api.request.DebitRequest;
 import com.banking.core.api.request.TransferRequest;
+import com.banking.core.api.response.OperationHistoryResponse;
 import com.banking.core.api.response.OperationResponse;
 import com.banking.core.application.facade.CoreBankingFacade;
 import jakarta.validation.Valid;
@@ -14,10 +15,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -48,7 +49,17 @@ public class CoreBankingController {
     }
 
     @GetMapping("/accounts/{accountId}")
-    public List<OperationResponse> history(@PathVariable UUID accountId) {
-        return coreBankingFacade.history(accountId, 25, 0).stream().map(CoreApiMapper::toResponse).toList();
+    public OperationHistoryResponse history(
+        @PathVariable UUID accountId,
+        @RequestParam(defaultValue = "25") int limit,
+        @RequestParam(defaultValue = "0") int offset
+    ) {
+        int safeLimit = Math.min(Math.max(limit, 1), 100);
+        int safeOffset = Math.max(offset, 0);
+        var items = coreBankingFacade.history(accountId, safeLimit, safeOffset)
+            .stream()
+            .map(CoreApiMapper::toResponse)
+            .toList();
+        return new OperationHistoryResponse(items, safeLimit, safeOffset, safeOffset + safeLimit);
     }
 }
