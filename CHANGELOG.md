@@ -9,6 +9,38 @@ For each PR, document:
 - reasons and goals of the change;
 - architecture or behavior impact.
 
+## PR #9 - feat core account status checks
+
+### Files changed
+
+- `backend/core-banking-api/src/main/java/com/banking/core/domain/service/CoreBankingService.java`
+- `backend/core-banking-api/src/main/java/com/banking/core/domain/port/AccountClient.java`
+- `backend/core-banking-api/src/main/java/com/banking/core/domain/model/AccountSnapshot.java`
+- `backend/core-banking-api/src/main/java/com/banking/core/infrastructure/account/**`
+- `backend/core-banking-api/src/main/java/com/banking/core/api/error/CoreExceptionHandler.java`
+- `backend/core-banking-api/src/test/java/com/banking/core/domain/service/CoreBankingServiceTest.java`
+- `backend/core-banking-api/src/main/resources/application.yml`
+- `backend/core-banking-api/src/main/resources/application-docker.yml`
+- `backend/core-banking-api/README.md`
+
+### Concepts and features
+
+- Account client port in the core domain.
+- HTTP adapter to call Account Banking API.
+- Account status validation before credit, debit and transfer operations.
+- Error mapping for missing, inactive, and unavailable account dependencies.
+
+### Reasons and goals
+
+Core banking operations must not run against closed or blocked accounts. This PR connects core banking to the account context so account status is verified before money movement is recorded.
+
+### Architecture and behavior impact
+
+- Introduces a cross-service dependency from Core Banking API to Account Banking API.
+- Keeps the dependency behind a domain port.
+- Preserves the domain service as the place where banking rules are enforced.
+- Adds configuration for local and Docker account API URLs.
+
 ## PR #8 - feat core banking business rules
 
 ### Files changed
