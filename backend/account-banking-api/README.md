@@ -22,6 +22,7 @@ Controller -> Facade / UseCase -> Service -> Domain Repository -> JPA Adapter ->
 ```http
 POST /accounts
 GET /accounts/{accountId}
+GET /accounts?owner_id={ownerId}&limit=25&offset=0
 ```
 
 ## Business rules covered in foundation
@@ -33,6 +34,7 @@ GET /accounts/{accountId}
 - Domain models are separated from JPA entities.
 - A missing account returns ACCOUNT_NOT_FOUND with HTTP 404.
 - Hibernate validates the schema; Flyway owns schema creation.
+- Account listing is filtered by owner and paginated.
 
 ## Local run
 
@@ -52,13 +54,15 @@ Implemented foundation:
 - JPA adapter layer
 - Flyway migration for account_schema.accounts
 - account not found exception and error handler
+- account listing endpoint by owner
+- pagination guard on limit and offset
 - first unit tests
-- first controller test
+- first controller tests
 - first repository integration test with Testcontainers
 
 Next steps:
 
-- add full business exceptions for account status rules
 - add owner access control
 - add security foundation
-- add OpenAPI contract
+- add richer OpenAPI examples
+- connect core-banking-api to account status checks
