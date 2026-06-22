@@ -3,6 +3,7 @@ package com.banking.account.api.controller;
 import com.banking.account.api.mapper.AccountApiMapper;
 import com.banking.account.api.request.CreateAccountRequest;
 import com.banking.account.api.response.AccountResponse;
+import com.banking.account.api.response.AccountsResponse;
 import com.banking.account.application.command.CreateAccountCommand;
 import com.banking.account.application.facade.AccountFacade;
 import com.banking.account.domain.model.Account;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -37,5 +39,20 @@ public class AccountController {
     @GetMapping("/{accountId}")
     public AccountResponse getAccount(@PathVariable UUID accountId) {
         return AccountApiMapper.toResponse(accountFacade.getAccount(accountId));
+    }
+
+    @GetMapping
+    public AccountsResponse findAccountsByOwner(
+        @RequestParam("owner_id") UUID ownerId,
+        @RequestParam(defaultValue = "25") int limit,
+        @RequestParam(defaultValue = "0") int offset
+    ) {
+        int safeLimit = Math.min(Math.max(limit, 1), 100);
+        int safeOffset = Math.max(offset, 0);
+        var items = accountFacade.findAccountsByOwner(ownerId, safeLimit, safeOffset)
+            .stream()
+            .map(AccountApiMapper::toResponse)
+            .toList();
+        return new AccountsResponse(items, safeLimit, safeOffset, safeOffset + safeLimit);
     }
 }
