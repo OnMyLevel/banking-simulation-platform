@@ -9,6 +9,37 @@ For each PR, document:
 - reasons and goals of the change;
 - architecture or behavior impact.
 
+## PR #12 - test local automation suite
+
+### Files changed
+
+- `tests/docker/docker-compose.tests.yml`
+- `tests/scripts/run-local-tests.sh`
+- `tests/scripts/wait-for-http.sh`
+- `tests/postman/Banking-Simulation.postman_collection.json`
+- `tests/postman/local-docker.postman_environment.json`
+- `tests/load/core-banking-smoke-load.js`
+- `tests/security/.gitkeep`
+- `tests/README.md`
+
+### Concepts and features
+
+- Local Docker test environment.
+- Functional API tests with Newman and Postman collection.
+- Smoke load test with k6.
+- Baseline security scan with OWASP ZAP.
+- One command script to start services and run tests.
+
+### Reasons and goals
+
+Manual startup and Postman execution are too slow and error-prone for daily validation. This PR creates an automated local test suite that can be run with one command.
+
+### Architecture and behavior impact
+
+- Adds a repeatable local quality gate.
+- Keeps test assets outside production services.
+- Makes functional, load and security checks executable in Docker.
+
 ## PR #11 - feat core history pagination
 
 ### Files changed
