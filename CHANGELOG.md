@@ -29,16 +29,18 @@ For each PR, document:
 - Smoke load test with k6.
 - Baseline security scan with OWASP ZAP.
 - One command script to start services and run tests.
+- Test evolution rules for future backend PRs.
 
 ### Reasons and goals
 
-Manual startup and Postman execution are too slow and error-prone for daily validation. This PR creates an automated local test suite that can be run with one command.
+Manual startup and Postman execution are too slow and error-prone for daily validation. This PR creates an automated local test suite that can be run with one command and extended with each API, business rule, security rule, or service dependency change.
 
 ### Architecture and behavior impact
 
 - Adds a repeatable local quality gate.
 - Keeps test assets outside production services.
 - Makes functional, load and security checks executable in Docker.
+- Establishes `tests/` as the executable regression suite for the platform.
 
 ## PR #11 - feat core history pagination
 
