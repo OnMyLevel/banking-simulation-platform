@@ -1,6 +1,7 @@
 package com.banking.core.domain.service;
 
 import com.banking.core.domain.exception.IdempotencyKeyRequiredException;
+import com.banking.core.domain.exception.InsufficientFundsException;
 import com.banking.core.domain.model.Money;
 import com.banking.core.domain.model.Operation;
 import com.banking.core.domain.model.OperationKind;
@@ -30,6 +31,39 @@ class CoreBankingServiceTest {
 
         assertThat(operation.kind()).isEqualTo(OperationKind.CREDIT);
         assertThat(operation.money().amount()).isEqualByComparingTo(BigDecimal.TEN);
+    }
+
+    @Test
+    void shouldCreateDebitWhenFundsAreEnough() {
+        UUID accountId = UUID.randomUUID();
+        when(repository.findByIdempotencyKey("key-2")).thenReturn(Optional.empty());
+        when(repository.balanceOf(accountId)).thenReturn(BigDecimal.TEN);
+        when(repository.persist(any(Operation.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Operation operation = service.debit(accountId, Money.of(BigDecimal.ONE, "EUR"), "key-2");
+
+        assertThat(operation.kind()).isEqualTo(OperationKind.DEBIT);
+    }
+
+    @Test
+    void shouldRejectDebitWhenFundsAreNotEnough() {
+        UUID accountId = UUID.randomUUID();
+        when(repository.findByIdempotencyKey("key-3")).thenReturn(Optional.empty());
+        when(repository.balanceOf(accountId)).thenReturn(BigDecimal.ZERO);
+
+        assertThatThrownBy(() -> service.debit(accountId, Money.of(BigDecimal.TEN, "EUR"), "key-3"))
+            .isInstanceOf(InsufficientFundsException.class);
+    }
+
+    @Test
+    void shouldRejectTransferWhenFundsAreNotEnough() {
+        UUID sourceAccountId = UUID.randomUUID();
+        UUID targetAccountId = UUID.randomUUID();
+        when(repository.findByIdempotencyKey("key-4")).thenReturn(Optional.empty());
+        when(repository.balanceOf(sourceAccountId)).thenReturn(BigDecimal.ONE);
+
+        assertThatThrownBy(() -> service.transfer(sourceAccountId, targetAccountId, Money.of(BigDecimal.TEN, "EUR"), "key-4"))
+            .isInstanceOf(InsufficientFundsException.class);
     }
 
     @Test
