@@ -27,6 +27,8 @@ The script starts the local Docker environment, waits for the APIs, runs the fun
 RUN_LOAD=false RUN_SECURITY=false bash tests/scripts/run-local-tests.sh
 ```
 
+This same functional-only mode is used by GitHub Actions on pull requests and pushes to `main`.
+
 ## Keep the environment running after tests
 
 ```bash
@@ -39,6 +41,22 @@ Then inspect the services manually:
 curl http://localhost:8082/accounts/00000000-0000-0000-0000-000000000000
 curl 'http://localhost:8083/operations/accounts/00000000-0000-0000-0000-000000000000?limit=1&offset=0'
 ```
+
+## CI execution
+
+The API check workflow is defined in:
+
+```text
+.github/workflows/api-check.yml
+```
+
+For now, CI runs the functional Newman/Postman suite only:
+
+```bash
+RUN_LOAD=false RUN_SECURITY=false bash tests/scripts/run-local-tests.sh
+```
+
+Load and security checks remain available locally and can be promoted to CI once their runtime and stability are acceptable.
 
 ## Reports
 
