@@ -4,12 +4,15 @@ import com.banking.core.domain.exception.CoreAccountUnavailableException;
 import com.banking.core.domain.exception.IdempotencyKeyRequiredException;
 import com.banking.core.domain.exception.InsufficientFundsException;
 import com.banking.core.domain.model.AccountSnapshot;
+import com.banking.core.domain.model.AuditEvent;
 import com.banking.core.domain.model.Money;
 import com.banking.core.domain.model.Operation;
 import com.banking.core.domain.model.OperationKind;
 import com.banking.core.domain.port.AccountClient;
+import com.banking.core.domain.port.AuditPublisher;
 import com.banking.core.domain.repository.OperationRepository;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -19,13 +22,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class CoreBankingServiceTest {
     private final OperationRepository repository = mock(OperationRepository.class);
     private final AccountClient accountClient = mock(AccountClient.class);
-    private final CoreBankingService service = new CoreBankingService(repository, accountClient);
+    private final AuditPublisher auditPublisher = mock(AuditPublisher.class);
+    private final CoreBankingService service = new CoreBankingService(repository, accountClient, auditPublisher);
 
     @Test
     void shouldCreateCreditOperation() {
@@ -39,6 +44,26 @@ class CoreBankingServiceTest {
         assertThat(operation.kind()).isEqualTo(OperationKind.CREDIT);
         assertThat(operation.money().amount()).isEqualByComparingTo(BigDecimal.TEN);
         verify(repository).guardAccount(accountId);
+        verify(auditPublisher).publish(any(AuditEvent.class));
+    }
+
+    @Test
+    void shouldPublishCreditAuditEvent() {
+        UUID accountId = UUID.randomUUID();
+        when(accountClient.getAccount(accountId)).thenReturn(new AccountSnapshot(accountId, "ACTIVE"));
+        when(repository.findByIdempotencyKey("key-audit-1")).thenReturn(Optional.empty());
+        when(repository.persist(any(Operation.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Operation operation = service.credit(accountId, Money.of(BigDecimal.TEN, "EUR"), "key-audit-1");
+
+        ArgumentCaptor<AuditEvent> captor = ArgumentCaptor.forClass(AuditEvent.class);
+        verify(auditPublisher).publish(captor.capture());
+        AuditEvent event = captor.getValue();
+        assertThat(event.operationId()).isEqualTo(operation.id());
+        assertThat(event.targetAccountId()).isEqualTo(accountId);
+        assertThat(event.operationKind()).isEqualTo(OperationKind.CREDIT);
+        assertThat(event.amount()).isEqualByComparingTo(BigDecimal.TEN);
+        assertThat(event.currency()).isEqualTo("EUR");
     }
 
     @Test
@@ -53,6 +78,28 @@ class CoreBankingServiceTest {
 
         assertThat(operation.kind()).isEqualTo(OperationKind.DEBIT);
         verify(repository).guardAccount(accountId);
+        verify(auditPublisher).publish(any(AuditEvent.class));
+    }
+
+    @Test
+    void shouldPublishTransferAuditEvent() {
+        UUID sourceAccountId = UUID.randomUUID();
+        UUID targetAccountId = UUID.randomUUID();
+        when(repository.findByIdempotencyKey("key-audit-2")).thenReturn(Optional.empty());
+        when(accountClient.getAccount(sourceAccountId)).thenReturn(new AccountSnapshot(sourceAccountId, "ACTIVE"));
+        when(accountClient.getAccount(targetAccountId)).thenReturn(new AccountSnapshot(targetAccountId, "ACTIVE"));
+        when(repository.balanceOf(sourceAccountId, "EUR")).thenReturn(BigDecimal.TEN);
+        when(repository.persist(any(Operation.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Operation operation = service.transfer(sourceAccountId, targetAccountId, Money.of(BigDecimal.ONE, "EUR"), "key-audit-2");
+
+        ArgumentCaptor<AuditEvent> captor = ArgumentCaptor.forClass(AuditEvent.class);
+        verify(auditPublisher).publish(captor.capture());
+        AuditEvent event = captor.getValue();
+        assertThat(event.operationId()).isEqualTo(operation.id());
+        assertThat(event.sourceAccountId()).isEqualTo(sourceAccountId);
+        assertThat(event.targetAccountId()).isEqualTo(targetAccountId);
+        assertThat(event.operationKind()).isEqualTo(OperationKind.TRANSFER);
     }
 
     @Test
@@ -63,6 +110,7 @@ class CoreBankingServiceTest {
 
         assertThatThrownBy(() -> service.credit(accountId, Money.of(BigDecimal.TEN, "EUR"), "key-5"))
             .isInstanceOf(CoreAccountUnavailableException.class);
+        verify(auditPublisher, never()).publish(any(AuditEvent.class));
     }
 
     @Test
@@ -74,6 +122,7 @@ class CoreBankingServiceTest {
 
         assertThatThrownBy(() -> service.debit(accountId, Money.of(BigDecimal.TEN, "EUR"), "key-3"))
             .isInstanceOf(InsufficientFundsException.class);
+        verify(auditPublisher, never()).publish(any(AuditEvent.class));
     }
 
     @Test
@@ -86,6 +135,7 @@ class CoreBankingServiceTest {
 
         assertThatThrownBy(() -> service.transfer(sourceAccountId, targetAccountId, Money.of(BigDecimal.TEN, "EUR"), "key-6"))
             .isInstanceOf(CoreAccountUnavailableException.class);
+        verify(auditPublisher, never()).publish(any(AuditEvent.class));
     }
 
     @Test
@@ -99,6 +149,7 @@ class CoreBankingServiceTest {
 
         assertThatThrownBy(() -> service.transfer(sourceAccountId, targetAccountId, Money.of(BigDecimal.TEN, "EUR"), "key-4"))
             .isInstanceOf(InsufficientFundsException.class);
+        verify(auditPublisher, never()).publish(any(AuditEvent.class));
     }
 
     @Test
@@ -109,6 +160,7 @@ class CoreBankingServiceTest {
         Operation operation = service.credit(UUID.randomUUID(), Money.of(BigDecimal.ONE, "EUR"), "key-1");
 
         assertThat(operation.id()).isEqualTo(existing.id());
+        verify(auditPublisher, never()).publish(any(AuditEvent.class));
     }
 
     @Test
