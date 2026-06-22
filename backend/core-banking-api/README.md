@@ -7,7 +7,7 @@ Core banking operation service for the Banking Simulation Platform.
 - credit operations
 - debit operations
 - internal transfers
-- operation history
+- paginated operation history
 - idempotency protection
 - guarded balance checks
 - currency-specific balance projection
@@ -28,7 +28,7 @@ Controller -> Facade / UseCase -> Service -> Domain Repository -> JPA Adapter ->
 POST /operations/credits
 POST /operations/debits
 POST /operations/transfers
-GET /operations/accounts/{accountId}
+GET /operations/accounts/{accountId}?limit=25&offset=0
 ```
 
 Sensitive write endpoints require:
@@ -65,13 +65,11 @@ read-timeout: 2s
 - A credit operation requires the target account to be ACTIVE.
 - A debit operation requires the source account to be ACTIVE.
 - A transfer operation requires source and target accounts to be ACTIVE.
-- A debit operation creates one completed operation only if the account has enough available balance in the requested currency.
-- A transfer operation debits the source account and credits the target account through the same operation record.
-- A transfer is rejected when the source account has insufficient funds in the requested currency.
 - Debit and transfer balance checks are protected by an account-level transactional guard.
 - A duplicated Idempotency-Key returns the existing operation instead of creating a second one.
 - Missing Idempotency-Key returns an explicit API error.
 - Balance projection is computed from existing operations and filtered by currency.
+- Operation history is paginated with limit, offset and nextOffset.
 
 ## Current status
 
@@ -92,6 +90,7 @@ Implemented foundation:
 - guarded balance checks
 - currency-specific balance projection from operations
 - account status checks before credit, debit and transfer
+- paginated operation history response
 - unit tests for idempotency, balance and account status rules
 - HTTP account adapter tests
 - Testcontainers repository integration test
@@ -101,6 +100,5 @@ Implemented foundation:
 
 - add operation audit events
 - add richer OpenAPI examples
-- expose paginated history parameters at REST level
 - update project changelog
 - add retry policy later if real failure patterns justify it
