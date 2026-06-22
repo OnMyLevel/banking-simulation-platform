@@ -11,6 +11,7 @@ Core banking operation service for the Banking Simulation Platform.
 - idempotency protection
 - guarded balance checks
 - currency-specific balance projection
+- account status validation
 - audit foundation
 
 ## Architecture rule
@@ -36,9 +37,27 @@ Sensitive write endpoints require:
 Idempotency-Key: unique-client-operation-key
 ```
 
+## Account dependency
+
+Core Banking API calls Account Banking API before executing write operations.
+
+Default local URL:
+
+```text
+http://localhost:8082
+```
+
+Docker URL:
+
+```text
+http://account-banking-api:8082
+```
+
 ## Business rules covered
 
-- A credit operation creates one completed operation.
+- A credit operation requires the target account to be ACTIVE.
+- A debit operation requires the source account to be ACTIVE.
+- A transfer operation requires source and target accounts to be ACTIVE.
 - A debit operation creates one completed operation only if the account has enough available balance in the requested currency.
 - A transfer operation debits the source account and credits the target account through the same operation record.
 - A transfer is rejected when the source account has insufficient funds in the requested currency.
@@ -56,20 +75,22 @@ Implemented foundation:
 - request and response DTOs
 - facade layer
 - domain service
+- account client port and HTTP adapter
 - repository port
 - JPA adapter layer
 - Flyway migration for `core_schema.operations`
 - insufficient funds rule
 - guarded balance checks
 - currency-specific balance projection from operations
-- unit tests for idempotency and balance rules
+- account status checks before credit, debit and transfer
+- unit tests for idempotency, balance and account status rules
 - Testcontainers repository integration test
 - OpenAPI contract
 
 ## Next steps
 
-- connect to account-banking-api for account status checks
 - add operation audit events
 - add richer OpenAPI examples
 - expose paginated history parameters at REST level
 - update project changelog
+- add resilience timeout and retry policy for Account Banking API calls
