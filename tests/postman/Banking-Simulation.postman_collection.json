@@ -26,7 +26,7 @@
         "url": "{{accountApiBaseUrl}}/accounts",
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"ownerId\": \"{{ownerId}}\"\n}"
+          "raw": "{\n  \"ownerId\": \"{{ownerId}}\",\n  \"currency\": \"EUR\"\n}"
         }
       }
     },
@@ -52,7 +52,7 @@
         "url": "{{accountApiBaseUrl}}/accounts",
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"ownerId\": \"{{ownerId}}\"\n}"
+          "raw": "{\n  \"ownerId\": \"{{ownerId}}\",\n  \"currency\": \"EUR\"\n}"
         }
       }
     },

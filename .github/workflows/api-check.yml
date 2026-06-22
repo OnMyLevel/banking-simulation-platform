@@ -1,0 +1,18 @@
+name: API Check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run local API check
+        env:
+          RUN_LOAD: false
+          RUN_SECURITY: false
+        run: bash tests/scripts/run-local-tests.sh
