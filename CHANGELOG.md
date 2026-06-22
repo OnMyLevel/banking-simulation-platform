@@ -9,6 +9,34 @@ For each PR, document:
 - reasons and goals of the change;
 - architecture or behavior impact.
 
+## PR #11 - feat core history pagination
+
+### Files changed
+
+- `backend/core-banking-api/src/main/java/com/banking/core/api/controller/CoreBankingController.java`
+- `backend/core-banking-api/src/main/java/com/banking/core/api/response/OperationHistoryResponse.java`
+- `backend/core-banking-api/src/test/java/com/banking/core/api/controller/CoreBankingControllerTest.java`
+- `backend/core-banking-api/src/main/resources/openapi/core-banking-api.yaml`
+- `backend/core-banking-api/README.md`
+
+### Concepts and features
+
+- Paginated operation history endpoint.
+- Operation history response wrapper.
+- Pagination guard for limit and offset.
+- Controller test for operation history.
+- OpenAPI response schema for history.
+
+### Reasons and goals
+
+Operation history should not return an unbounded list. This PR exposes limit and offset parameters and returns pagination metadata to make clients safer and easier to implement.
+
+### Architecture and behavior impact
+
+- Keeps pagination logic at the API boundary.
+- Preserves the facade and domain service contract.
+- Standardizes history responses with items, limit, offset and nextOffset.
+
 ## PR #10 - feat core resilience
 
 ### Files changed
