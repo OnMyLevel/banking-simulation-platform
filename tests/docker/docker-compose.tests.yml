@@ -1,0 +1,92 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: banking-test-postgres
+    environment:
+      POSTGRES_DB: banking_simulation
+      POSTGRES_USER: banking
+      POSTGRES_PASSWORD: banking
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U banking -d banking_simulation"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  account-banking-api:
+    image: maven:3.9-eclipse-temurin-21
+    container_name: banking-test-account-api
+    working_dir: /workspace/backend/account-banking-api
+    command: mvn -q spring-boot:run -Dspring-boot.run.profiles=docker
+    volumes:
+      - ../..:/workspace
+      - maven_cache:/root/.m2
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  core-banking-api:
+    image: maven:3.9-eclipse-temurin-21
+    container_name: banking-test-core-api
+    working_dir: /workspace/backend/core-banking-api
+    command: mvn -q spring-boot:run -Dspring-boot.run.profiles=docker
+    volumes:
+      - ../..:/workspace
+      - maven_cache:/root/.m2
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      BANKING_ACCOUNT_API_BASE_URL: http://account-banking-api:8082
+    ports:
+      - "8083:8083"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      account-banking-api:
+        condition: service_started
+
+  newman:
+    image: postman/newman:alpine
+    container_name: banking-test-newman
+    working_dir: /etc/newman
+    volumes:
+      - ../postman:/etc/newman
+    command: run Banking-Simulation.postman_collection.json -e local-docker.postman_environment.json --reporters cli,junit --reporter-junit-export /etc/newman/results/newman-results.xml
+    depends_on:
+      core-banking-api:
+        condition: service_started
+
+  k6:
+    image: grafana/k6:latest
+    container_name: banking-test-k6
+    working_dir: /scripts
+    volumes:
+      - ../load:/scripts
+    environment:
+      CORE_API_BASE_URL: http://core-banking-api:8083
+      ACCOUNT_API_BASE_URL: http://account-banking-api:8082
+    command: run core-banking-smoke-load.js
+    profiles:
+      - load
+    depends_on:
+      core-banking-api:
+        condition: service_started
+
+  zap:
+    image: ghcr.io/zaproxy/zaproxy:stable
+    container_name: banking-test-zap
+    command: zap-baseline.py -t http://core-banking-api:8083/operations/accounts/00000000-0000-0000-0000-000000000000 -r zap-report.html -I
+    volumes:
+      - ../security:/zap/wrk
+    profiles:
+      - security
+    depends_on:
+      core-banking-api:
+        condition: service_started
+
+volumes:
+  maven_cache:

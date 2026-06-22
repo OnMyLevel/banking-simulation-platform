@@ -1,0 +1,244 @@
+{
+  "info": {
+    "name": "Banking Simulation Functional Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Account - Create source account",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 201 or 200', function () { pm.expect([200, 201]).to.include(pm.response.code); });",
+              "const body = pm.response.json();",
+              "pm.expect(body.id).to.exist;",
+              "pm.environment.set('accountId', body.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{accountApiBaseUrl}}/accounts",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ownerId\": \"{{ownerId}}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Account - Create target account",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 201 or 200', function () { pm.expect([200, 201]).to.include(pm.response.code); });",
+              "const body = pm.response.json();",
+              "pm.expect(body.id).to.exist;",
+              "pm.environment.set('targetAccountId', body.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{accountApiBaseUrl}}/accounts",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ownerId\": \"{{ownerId}}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Account - Get source account",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.expect(body.id).to.eql(pm.environment.get('accountId'));",
+              "pm.expect(body.status).to.eql('ACTIVE');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{accountApiBaseUrl}}/accounts/{{accountId}}"
+      }
+    },
+    {
+      "name": "Core - Credit source account",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 201', function () { pm.response.to.have.status(201); });",
+              "const body = pm.response.json();",
+              "pm.expect(body.targetAccountId).to.eql(pm.environment.get('accountId'));",
+              "pm.expect(body.kind).to.eql('CREDIT');",
+              "pm.expect(body.currency).to.eql('EUR');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Idempotency-Key", "value": "postman-credit-001" }
+        ],
+        "url": "{{coreApiBaseUrl}}/operations/credits",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"accountId\": \"{{accountId}}\",\n  \"money\": {\n    \"amount\": 100.00,\n    \"currency\": \"EUR\"\n  }\n}"
+        }
+      }
+    },
+    {
+      "name": "Core - Debit source account",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 201', function () { pm.response.to.have.status(201); });",
+              "const body = pm.response.json();",
+              "pm.expect(body.sourceAccountId).to.eql(pm.environment.get('accountId'));",
+              "pm.expect(body.kind).to.eql('DEBIT');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Idempotency-Key", "value": "postman-debit-001" }
+        ],
+        "url": "{{coreApiBaseUrl}}/operations/debits",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"accountId\": \"{{accountId}}\",\n  \"money\": {\n    \"amount\": 10.00,\n    \"currency\": \"EUR\"\n  }\n}"
+        }
+      }
+    },
+    {
+      "name": "Core - Transfer to target account",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 201', function () { pm.response.to.have.status(201); });",
+              "const body = pm.response.json();",
+              "pm.expect(body.sourceAccountId).to.eql(pm.environment.get('accountId'));",
+              "pm.expect(body.targetAccountId).to.eql(pm.environment.get('targetAccountId'));",
+              "pm.expect(body.kind).to.eql('TRANSFER');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Idempotency-Key", "value": "postman-transfer-001" }
+        ],
+        "url": "{{coreApiBaseUrl}}/operations/transfers",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sourceAccountId\": \"{{accountId}}\",\n  \"targetAccountId\": \"{{targetAccountId}}\",\n  \"money\": {\n    \"amount\": 15.00,\n    \"currency\": \"EUR\"\n  }\n}"
+        }
+      }
+    },
+    {
+      "name": "Core - Insufficient funds rejection",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 409', function () { pm.response.to.have.status(409); });",
+              "const body = pm.response.json();",
+              "pm.expect(body.code).to.eql('INSUFFICIENT_FUNDS');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Idempotency-Key", "value": "postman-debit-too-high-001" }
+        ],
+        "url": "{{coreApiBaseUrl}}/operations/debits",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"accountId\": \"{{accountId}}\",\n  \"money\": {\n    \"amount\": 999999.00,\n    \"currency\": \"EUR\"\n  }\n}"
+        }
+      }
+    },
+    {
+      "name": "Core - Missing Idempotency-Key rejection",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 400', function () { pm.response.to.have.status(400); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{coreApiBaseUrl}}/operations/credits",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"accountId\": \"{{accountId}}\",\n  \"money\": {\n    \"amount\": 1.00,\n    \"currency\": \"EUR\"\n  }\n}"
+        }
+      }
+    },
+    {
+      "name": "Core - Paginated history",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.expect(body.items).to.be.an('array');",
+              "pm.expect(body.limit).to.eql(10);",
+              "pm.expect(body.offset).to.eql(0);",
+              "pm.expect(body.nextOffset).to.eql(10);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{coreApiBaseUrl}}/operations/accounts/{{accountId}}?limit=10&offset=0"
+      }
+    }
+  ]
+}
