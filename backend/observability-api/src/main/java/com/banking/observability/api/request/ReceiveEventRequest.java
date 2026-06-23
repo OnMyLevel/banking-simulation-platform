@@ -13,10 +13,10 @@ public record ReceiveEventRequest(
     @NotNull UUID eventId,
     UUID sourceAccountId,
     UUID targetAccountId,
-    @NotBlank String eventKind,
-    @NotBlank String eventStatus,
+    @NotBlank @Size(max = 32) String eventKind,
+    @NotBlank @Size(max = 32) String eventStatus,
     @NotNull @DecimalMin(value = "0.01") BigDecimal amount,
     @NotBlank @Size(min = 3, max = 3) String currency,
-    @NotBlank String eventKey,
+    @NotBlank @Size(max = 128) String eventKey,
     @NotNull Instant occurredAt
 ) {}
