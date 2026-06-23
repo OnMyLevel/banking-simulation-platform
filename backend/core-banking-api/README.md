@@ -12,7 +12,7 @@ Core banking operation service for the Banking Simulation Platform.
 - guarded balance checks
 - currency-specific balance projection
 - account status validation
-- audit event delivery
+- reliable event delivery
 
 ## Architecture rule
 
@@ -37,6 +37,16 @@ Sensitive write endpoints require:
 Idempotency-Key: unique-client-operation-key
 ```
 
+## Event outbox
+
+Core Banking API stores a row in `core_schema.outbox_events` in the same transaction as the banking operation.
+
+A scheduled relay reads pending rows and sends them to Observability API.
+
+The outbox stores the event type, destination type, payload, retry count, last error and next retry date. Today the destination is `OBSERVABILITY_HTTP`, but this design keeps the door open for Kafka, Fluent Bit or another transport later without changing the domain service.
+
+If Observability API is unavailable, the banking operation remains completed. The relay marks the event as failed and retries later.
+
 ## Account dependency
 
 Core Banking API calls Account Banking API before executing write operations.
@@ -53,16 +63,7 @@ Docker URL:
 http://account-banking-api:8082
 ```
 
-Configured client defaults:
-
-```text
-connect-timeout: 1s
-read-timeout: 2s
-```
-
 ## Event delivery dependency
-
-Core Banking API sends successful operation events to Observability API through the `AuditPublisher` port.
 
 Default local URL:
 
@@ -83,8 +84,6 @@ connect-timeout: 1s
 read-timeout: 2s
 ```
 
-For the MVP, event delivery failure does not roll back the banking operation. The failure is logged and the operation stays completed. A reliable outbox will be added later.
-
 ## Business rules covered
 
 - A credit operation requires the target account to be ACTIVE.
@@ -95,7 +94,7 @@ For the MVP, event delivery failure does not roll back the banking operation. Th
 - Missing Idempotency-Key returns an explicit API error.
 - Balance projection is computed from existing operations and filtered by currency.
 - Operation history is paginated with limit, offset and nextOffset.
-- Successful credit, debit and transfer operations create an audit event through `AuditPublisher`.
+- Successful credit, debit and transfer operations create an outbox event through `AuditPublisher`.
 
 ## Current status
 
@@ -108,27 +107,30 @@ Implemented foundation:
 - domain service
 - account client port and HTTP adapter
 - audit publisher port
-- HTTP audit publisher adapter
+- outbox-backed publisher adapter
+- HTTP sender adapter
+- scheduled outbox relay
 - HTTP timeout configuration
 - account dependency error mapping
 - repository port
 - JPA adapter layer
 - Flyway migration for `core_schema.operations`
+- Flyway migration for `core_schema.outbox_events`
 - insufficient funds rule
 - guarded balance checks
 - currency-specific balance projection from operations
 - account status checks before credit, debit and transfer
 - paginated operation history response
-- audit event creation after successful operations
-- audit event HTTP delivery to Observability API
+- retryable event delivery to Observability API
 - unit tests for idempotency, balance, account status and audit rules
 - HTTP account adapter tests
-- HTTP audit publisher tests
+- HTTP sender tests
 - Testcontainers repository integration test
 - OpenAPI contract
 
 ## Next steps
 
-- add a reliable outbox for event retry
+- add repository integration tests for outbox events
+- add configurable retry policy
+- add Kafka or Fluent Bit relay implementation if the architecture requires it
 - add richer OpenAPI examples
-- add retry policy later if real failure patterns justify it
