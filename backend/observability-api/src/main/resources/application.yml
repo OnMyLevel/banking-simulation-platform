@@ -1,0 +1,21 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: observability-api
+  datasource:
+    url: jdbc:postgresql://localhost:5432/banking_simulation
+    username: banking
+    password: banking
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        default_schema: observability_schema
+  flyway:
+    enabled: true
+    schemas: observability_schema
+    default-schema: observability_schema
