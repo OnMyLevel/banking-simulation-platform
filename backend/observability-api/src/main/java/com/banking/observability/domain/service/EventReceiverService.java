@@ -15,7 +15,10 @@ public class EventReceiverService {
     }
 
     public ReceivedEvent receive(UUID eventId, UUID sourceAccountId, UUID targetAccountId, String eventKind, String eventStatus, BigDecimal amount, String currency, String eventKey, Instant occurredAt) {
-        ReceivedEvent event = ReceivedEvent.receive(eventId, sourceAccountId, targetAccountId, eventKind, eventStatus, amount, currency, eventKey, occurredAt);
-        return repository.persist(event);
+        return repository.findByEventId(eventId)
+            .orElseGet(() -> {
+                ReceivedEvent event = ReceivedEvent.receive(eventId, sourceAccountId, targetAccountId, eventKind, eventStatus, amount, currency, eventKey, occurredAt);
+                return repository.persist(event);
+            });
     }
 }
