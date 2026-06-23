@@ -23,6 +23,7 @@ jobs:
           - user-management-api
           - account-banking-api
           - core-banking-api
+          - observability-api
     steps:
       - name: Checkout
         uses: actions/checkout@v4
