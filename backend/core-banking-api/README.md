@@ -12,7 +12,7 @@ Core banking operation service for the Banking Simulation Platform.
 - guarded balance checks
 - currency-specific balance projection
 - account status validation
-- audit event foundation
+- audit event delivery
 
 ## Architecture rule
 
@@ -60,6 +60,31 @@ connect-timeout: 1s
 read-timeout: 2s
 ```
 
+## Event delivery dependency
+
+Core Banking API sends successful operation events to Observability API through the `AuditPublisher` port.
+
+Default local URL:
+
+```text
+http://localhost:8085
+```
+
+Docker URL:
+
+```text
+http://observability-api:8085
+```
+
+Configured client defaults:
+
+```text
+connect-timeout: 1s
+read-timeout: 2s
+```
+
+For the MVP, event delivery failure does not roll back the banking operation. The failure is logged and the operation stays completed. A reliable outbox will be added later.
+
 ## Business rules covered
 
 - A credit operation requires the target account to be ACTIVE.
@@ -83,7 +108,7 @@ Implemented foundation:
 - domain service
 - account client port and HTTP adapter
 - audit publisher port
-- no-op audit publisher adapter
+- HTTP audit publisher adapter
 - HTTP timeout configuration
 - account dependency error mapping
 - repository port
@@ -95,13 +120,15 @@ Implemented foundation:
 - account status checks before credit, debit and transfer
 - paginated operation history response
 - audit event creation after successful operations
+- audit event HTTP delivery to Observability API
 - unit tests for idempotency, balance, account status and audit rules
 - HTTP account adapter tests
+- HTTP audit publisher tests
 - Testcontainers repository integration test
 - OpenAPI contract
 
 ## Next steps
 
-- connect AuditPublisher to observability-api or an event broker
+- add a reliable outbox for event retry
 - add richer OpenAPI examples
 - add retry policy later if real failure patterns justify it
