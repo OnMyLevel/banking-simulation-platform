@@ -2,7 +2,7 @@ CREATE SCHEMA IF NOT EXISTS observability_schema;
 
 CREATE TABLE IF NOT EXISTS observability_schema.audit_events (
     id UUID PRIMARY KEY,
-    event_id UUID NOT NULL,
+    event_id UUID NOT NULL UNIQUE,
     source_account_id UUID,
     target_account_id UUID,
     event_kind VARCHAR(32) NOT NULL,
