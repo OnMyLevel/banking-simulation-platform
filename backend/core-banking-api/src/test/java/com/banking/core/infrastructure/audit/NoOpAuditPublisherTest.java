@@ -12,20 +12,20 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.UUID;
 
+import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.test.web.client.ExpectedCount.once;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
-import static org.springframework.http.HttpMethod.POST;
 
 class NoOpAuditPublisherTest {
     @Test
     void shouldSendEventToRemoteService() {
         RestClient.Builder builder = RestClient.builder().baseUrl("http://events-service");
         MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
-        NoOpAuditPublisher publisher = new NoOpAuditPublisher(builder.build());
+        HttpAuditPublisher publisher = new HttpAuditPublisher(builder.build());
         Operation operation = Operation.credit(UUID.randomUUID(), Money.of(BigDecimal.TEN, "EUR"), "key-1");
 
         server.expect(once(), requestTo("http://events-service/events"))
@@ -43,7 +43,7 @@ class NoOpAuditPublisherTest {
     void shouldNotFailWhenRemoteServiceFails() {
         RestClient.Builder builder = RestClient.builder().baseUrl("http://events-service");
         MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
-        NoOpAuditPublisher publisher = new NoOpAuditPublisher(builder.build());
+        HttpAuditPublisher publisher = new HttpAuditPublisher(builder.build());
         Operation operation = Operation.credit(UUID.randomUUID(), Money.of(BigDecimal.TEN, "EUR"), "key-2");
 
         server.expect(once(), requestTo("http://events-service/events"))
