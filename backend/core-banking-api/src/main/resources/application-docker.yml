@@ -9,3 +9,7 @@ banking:
     base-url: http://account-banking-api:8082
     connect-timeout: 1s
     read-timeout: 2s
+  observability-api:
+    base-url: http://observability-api:8085
+    connect-timeout: 1s
+    read-timeout: 2s
