@@ -38,6 +38,21 @@ Example payload:
 }
 ```
 
+## Idempotency
+
+`eventId` is unique. If the same event is received again, the service returns the already stored event instead of creating a second row.
+
+## Validation
+
+Payload constraints match the database limits:
+
+```text
+eventKind: required, max 32
+eventStatus: required, max 32
+eventKey: required, max 128
+currency: required, exactly 3
+```
+
 ## Persistence
 
 Events are stored in:
@@ -60,6 +75,8 @@ Implemented foundation:
 - domain repository port
 - JPA adapter layer
 - Flyway migration for `observability_schema.audit_events`
+- unique constraint on `event_id`
+- idempotent receive behavior
 - CI build inclusion
 
 ## Next steps
