@@ -13,6 +13,7 @@ Core banking operation service for the Banking Simulation Platform.
 - currency-specific balance projection
 - account status validation
 - reliable event delivery
+- outbox delivery monitoring
 
 ## Architecture rule
 
@@ -109,6 +110,30 @@ Recommended usage:
 - `FLUENT_BIT` for log-forwarder-first delivery.
 - `KAFKA` for event-driven delivery.
 - `NOOP` for temporary local disablement.
+
+## Outbox monitoring
+
+The Core API exposes Micrometer metrics through Spring Boot Actuator.
+
+```http
+GET /actuator/metrics
+```
+
+Useful metrics:
+
+```text
+banking.outbox.delivery.success
+banking.outbox.delivery.failure
+banking.outbox.events{status="PENDING"}
+banking.outbox.events{status="FAILED"}
+banking.outbox.events{status="SENT"}
+```
+
+Suggested operational interpretation:
+
+- `banking.outbox.delivery.failure` increasing quickly means the selected destination is unstable or unavailable.
+- `banking.outbox.events{status="FAILED"}` staying high means events need investigation or manual retry.
+- `banking.outbox.events{status="PENDING"}` growing continuously means the relay may be blocked or too slow.
 
 ## Fluent Bit forwarding
 
@@ -219,6 +244,7 @@ Implemented foundation:
 - outbox-backed publisher adapter
 - configurable outbox destination
 - destination-based event sender router
+- outbox delivery metrics
 - REST sender strategy
 - Fluent Bit sender strategy
 - Kafka sender strategy
@@ -254,6 +280,6 @@ Implemented foundation:
 
 ## Next steps
 
-- add Docker Compose support for Kafka and Fluent Bit if needed for local end-to-end tests
+- add operational alerts around outbox failed and pending event counts
 - replace temporary local users with a JWT-based resource server configuration
 - add richer OpenAPI examples
