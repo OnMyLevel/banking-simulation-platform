@@ -7,7 +7,8 @@ Spring Cloud Gateway entry point for the Banking Simulation Platform.
 - expose one HTTP entry point for frontend applications;
 - route public API traffic to backend services;
 - keep backend service URLs hidden from clients;
-- prepare cross-cutting concerns such as authentication, correlation id, rate limiting and request logging.
+- propagate request trace headers for distributed troubleshooting;
+- prepare cross-cutting concerns such as authentication, rate limiting and request logging.
 
 ## Local port
 
@@ -39,6 +40,29 @@ BANKING_ACCOUNT_API_URI=http://account-banking-api:8082
 BANKING_CORE_API_URI=http://core-banking-api:8083
 ```
 
+## Request trace header
+
+The Gateway uses this header:
+
+```text
+X-Correlation-Id
+```
+
+Behavior:
+
+```text
+- if the request already contains X-Correlation-Id, the Gateway keeps it;
+- if the request does not contain it, the Gateway generates a UUID;
+- the Gateway forwards the value to the backend API;
+- the Gateway returns the value in the HTTP response.
+```
+
+Detailed algorithm:
+
+```text
+docs/architecture/api-gateway-flow.md
+```
+
 ## Health endpoints
 
 ```http
@@ -64,12 +88,12 @@ Implemented foundation:
 - Spring Boot application;
 - Spring Cloud Gateway dependency;
 - route configuration for User, Account and Core APIs;
+- request trace header filter;
 - Actuator health and info endpoints;
 - Dockerfile.
 
 ## Next steps
 
-- add correlation id propagation;
 - add gateway-level request logging;
 - add JWT/OAuth2 validation;
 - add rate limiting;
