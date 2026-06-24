@@ -44,6 +44,10 @@ public class OutboxEvent {
         return new OutboxEvent(id, aggregateId, eventType, destinationType, OutboxEventStatus.FAILED, payload, retryCount + 1, safeError, nextRetryAt, createdAt, sentAt);
     }
 
+    public OutboxEvent retryNow() {
+        return new OutboxEvent(id, aggregateId, eventType, destinationType, OutboxEventStatus.PENDING, payload, retryCount, lastError, Instant.now(), createdAt, sentAt);
+    }
+
     public UUID id() { return id; }
     public UUID aggregateId() { return aggregateId; }
     public String eventType() { return eventType; }
