@@ -41,9 +41,18 @@ Idempotency-Key: unique-client-operation-key
 
 Core Banking API stores a row in `core_schema.outbox_events` in the same transaction as the banking operation.
 
-A scheduled relay reads pending rows and sends them to Observability API.
+A scheduled relay reads pending rows and sends them through a destination-based sender router.
 
-The outbox stores the event type, destination type, payload, retry count, last error and next retry date. Today the destination is `OBSERVABILITY_HTTP`, but this design keeps the door open for Kafka, Fluent Bit or another transport later without changing the domain service.
+```text
+OutboxEventRelay
+  -> EventDeliveryRouter
+      -> RestEventSender        destination_type = OBSERVABILITY_HTTP
+      -> NoopEventSender        destination_type = NOOP
+      -> future Kafka sender    destination_type = KAFKA
+      -> future Fluent Bit      destination_type = FLUENT_BIT
+```
+
+The outbox stores the event type, destination type, payload, retry count, last error and next retry date. This keeps the door open for Kafka, Fluent Bit or another transport later without changing the domain service.
 
 If Observability API is unavailable, the banking operation remains completed. The relay marks the event as failed and retries later.
 
@@ -108,7 +117,9 @@ Implemented foundation:
 - account client port and HTTP adapter
 - audit publisher port
 - outbox-backed publisher adapter
-- HTTP sender adapter
+- destination-based event sender router
+- REST sender strategy
+- NOOP sender strategy
 - scheduled outbox relay
 - HTTP timeout configuration
 - account dependency error mapping
@@ -125,12 +136,12 @@ Implemented foundation:
 - unit tests for idempotency, balance, account status and audit rules
 - HTTP account adapter tests
 - HTTP sender tests
+- EventDeliveryRouter tests
 - Testcontainers repository integration test
 - OpenAPI contract
 
 ## Next steps
 
-- add repository integration tests for outbox events
 - add configurable retry policy
-- add Kafka or Fluent Bit relay implementation if the architecture requires it
+- add Kafka or Fluent Bit sender implementation if the architecture requires it
 - add richer OpenAPI examples
