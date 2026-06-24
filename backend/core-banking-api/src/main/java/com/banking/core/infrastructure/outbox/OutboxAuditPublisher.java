@@ -4,16 +4,19 @@ import com.banking.core.domain.model.AuditEvent;
 import com.banking.core.domain.model.OutboxEvent;
 import com.banking.core.domain.port.AuditPublisher;
 import com.banking.core.domain.repository.OutboxEventRepository;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
+@EnableConfigurationProperties(OutboxDestinationProperties.class)
 public class OutboxAuditPublisher implements AuditPublisher {
     private static final String EVENT_TYPE = "CORE_OPERATION_COMPLETED";
-    private static final String DESTINATION_TYPE = "OBSERVABILITY_HTTP";
     private final OutboxEventRepository repository;
+    private final OutboxDestinationProperties properties;
 
-    public OutboxAuditPublisher(OutboxEventRepository repository) {
+    public OutboxAuditPublisher(OutboxEventRepository repository, OutboxDestinationProperties properties) {
         this.repository = repository;
+        this.properties = properties;
     }
 
     @Override
@@ -21,7 +24,7 @@ public class OutboxAuditPublisher implements AuditPublisher {
         repository.persist(OutboxEvent.pending(
             event.operationId(),
             EVENT_TYPE,
-            DESTINATION_TYPE,
+            properties.safeDestinationType(),
             toPayload(event)
         ));
     }
