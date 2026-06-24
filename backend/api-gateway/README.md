@@ -167,6 +167,16 @@ Detailed JWT test guide:
 docs/architecture/api-gateway-jwt-tests.md
 ```
 
+## Signed access tests
+
+The Gateway has signed access tests using an in-memory RSA key pair. They verify the `roles` claim mapping and route behavior with bearer access values.
+
+Detailed signed access test guide:
+
+```text
+docs/architecture/api-gateway-signed-access-tests.md
+```
+
 ## Health endpoints
 
 ```http
@@ -201,10 +211,11 @@ Implemented foundation:
 - technical request logging filter;
 - route behavior tests;
 - jwt profile route tests;
+- signed access tests;
 - Actuator health and info endpoints;
 - Dockerfile.
 
 ## Next steps
 
-- complete signed-token integration tests;
-- replace in-memory traffic budgets with Redis-backed counters.
+- replace in-memory traffic budgets with Redis-backed counters;
+- add Gateway observability metrics.

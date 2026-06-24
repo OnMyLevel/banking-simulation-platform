@@ -15,6 +15,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 public class GatewayJwtAccessConfiguration {
     @Bean
     SecurityWebFilterChain gatewayJwtRules(ServerHttpSecurity http) {
+        GatewayClaimAuthoritiesConverter converter = new GatewayClaimAuthoritiesConverter();
         return http
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
@@ -26,7 +27,7 @@ public class GatewayJwtAccessConfiguration {
                 .pathMatchers("/api/operations/**").hasAnyRole(GatewayRoles.USER, GatewayRoles.ADVISOR, GatewayRoles.ADMIN)
                 .anyExchange().denyAll()
             )
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> { }))
+            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(converter)))
             .build();
     }
 }
