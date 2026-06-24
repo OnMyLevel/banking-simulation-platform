@@ -31,6 +31,25 @@ Expected behavior:
 - forward accepted requests to backend APIs
 ```
 
+## Provider configuration
+
+The Gateway exposes provider settings under this prefix:
+
+```text
+banking.gateway.provider
+```
+
+Properties:
+
+| Property | Environment variable | Default |
+| --- | --- | --- |
+| `name` | `BANKING_GATEWAY_PROVIDER_NAME` | `local-provider` |
+| `issuer` | `BANKING_GATEWAY_PROVIDER_ISSUER` | `local-issuer` |
+| `keys-path` | `BANKING_GATEWAY_PROVIDER_KEYS_PATH` | `/keys` |
+| `audience` | `BANKING_GATEWAY_PROVIDER_AUDIENCE` | `banking-api-gateway` |
+
+These values document the expected provider contract and prepare deployment-specific configuration.
+
 ## Target roles
 
 ```text
@@ -67,9 +86,10 @@ Role intent:
 2. Add the resource server dependency to the Gateway.
 3. Add role constants used by Gateway access rules.
 4. Add a dedicated jwt profile for token-based access rules.
-5. Later, configure issuer or JWK location from the deployment environment.
-6. Later, add integration tests with signed tokens.
-7. Later, forward trusted identity claims to backend APIs only if required.
+5. Add provider configuration properties.
+6. Later, wire deployment-specific provider URLs.
+7. Later, add integration tests with signed tokens.
+8. Later, forward trusted identity claims to backend APIs only if required.
 ```
 
 ## Boundaries

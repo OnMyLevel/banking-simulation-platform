@@ -96,6 +96,15 @@ ADMIN
 OPS
 ```
 
+Provider settings:
+
+```text
+BANKING_GATEWAY_PROVIDER_NAME
+BANKING_GATEWAY_PROVIDER_ISSUER
+BANKING_GATEWAY_PROVIDER_KEYS_PATH
+BANKING_GATEWAY_PROVIDER_AUDIENCE
+```
+
 The default local profile remains the MVP fallback. A dedicated profile contains the target route rules and can be completed once the identity provider configuration is available.
 
 Detailed identity model:
@@ -173,6 +182,7 @@ Implemented foundation:
 - Spring Boot application;
 - Spring Cloud Gateway dependency;
 - identity provider dependency prepared;
+- identity provider settings documented;
 - route configuration for User, Account and Core APIs;
 - request trace header filter;
 - route access rules;
@@ -185,6 +195,5 @@ Implemented foundation:
 
 ## Next steps
 
-- complete identity provider environment configuration;
-- add signed-token integration tests;
+- complete signed-token integration tests;
 - replace in-memory traffic budgets with Redis-backed counters.

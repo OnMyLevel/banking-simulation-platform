@@ -1,5 +1,6 @@
 package com.banking.gateway.access;
 
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -9,6 +10,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 
 @Configuration
 @EnableWebFluxSecurity
+@EnableConfigurationProperties(GatewayProviderProperties.class)
 @Profile("jwt")
 public class GatewayJwtAccessConfiguration {
     @Bean

@@ -32,6 +32,11 @@ banking:
     accounts-budget-per-minute: 60
     operations-budget-per-minute: 30
     default-budget-per-minute: 180
+    provider:
+      name: ${BANKING_GATEWAY_PROVIDER_NAME:local-provider}
+      issuer: ${BANKING_GATEWAY_PROVIDER_ISSUER:local-issuer}
+      keys-path: ${BANKING_GATEWAY_PROVIDER_KEYS_PATH:/keys}
+      audience: ${BANKING_GATEWAY_PROVIDER_AUDIENCE:banking-api-gateway}
 
 management:
   endpoints:
