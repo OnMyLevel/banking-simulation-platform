@@ -26,6 +26,13 @@ spring:
           filters:
             - StripPrefix=1
 
+banking:
+  gateway:
+    users-budget-per-minute: 120
+    accounts-budget-per-minute: 60
+    operations-budget-per-minute: 30
+    default-budget-per-minute: 180
+
 management:
   endpoints:
     web:
