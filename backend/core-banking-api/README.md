@@ -135,6 +135,12 @@ Suggested operational interpretation:
 - `banking.outbox.events{status="FAILED"}` staying high means events need investigation or manual retry.
 - `banking.outbox.events{status="PENDING"}` growing continuously means the relay may be blocked or too slow.
 
+Detailed thresholds and runbook are documented in:
+
+```text
+docs/observability/core-signals.md
+```
+
 ## Fluent Bit forwarding
 
 The `FLUENT_BIT` destination is supported by `FluentBitEventSender` through the log forwarder HTTP input.
@@ -245,6 +251,7 @@ Implemented foundation:
 - configurable outbox destination
 - destination-based event sender router
 - outbox delivery metrics
+- outbox monitoring runbook
 - REST sender strategy
 - Fluent Bit sender strategy
 - Kafka sender strategy
@@ -280,6 +287,5 @@ Implemented foundation:
 
 ## Next steps
 
-- add operational alerts around outbox failed and pending event counts
 - replace temporary local users with a JWT-based resource server configuration
 - add richer OpenAPI examples
