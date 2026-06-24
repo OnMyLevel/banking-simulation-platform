@@ -1,0 +1,45 @@
+name: Client Web Checks
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/client-web-react/**'
+      - '.github/workflows/frontend-client-web.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/client-web-react/**'
+      - '.github/workflows/frontend-client-web.yml'
+
+jobs:
+  client-web-react:
+    name: Client Web React
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: frontend/client-web-react
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/client-web-react/package.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm run test
+
+      - name: Build
+        run: npm run build
