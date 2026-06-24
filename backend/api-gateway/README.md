@@ -164,6 +164,12 @@ Detailed telemetry guide:
 docs/architecture/api-gateway-telemetry.md
 ```
 
+Operational guide:
+
+```text
+docs/observability/gateway-ops-guide.md
+```
+
 ## Route behavior tests
 
 The Gateway has HTTP-level route behavior tests covering public health, denied internal paths, MVP public user paths, protected account and operation paths, and correlation id response behavior.
@@ -226,6 +232,7 @@ Implemented foundation:
 - target identity role constants;
 - per-client traffic budget filter;
 - Gateway telemetry;
+- Gateway operations guide;
 - technical request logging filter;
 - route behavior tests;
 - jwt profile route tests;
@@ -235,5 +242,5 @@ Implemented foundation:
 
 ## Next steps
 
-- add Gateway dashboard and runbook;
-- refine external API naming.
+- refine external API naming;
+- add frontend integration documentation.
