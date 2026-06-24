@@ -157,6 +157,16 @@ Detailed test guide:
 docs/architecture/api-gateway-tests.md
 ```
 
+## JWT route tests
+
+The Gateway also has route tests for the `jwt` profile. They verify that account and operation routes require a caller identity and that target roles can reach the expected route families.
+
+Detailed JWT test guide:
+
+```text
+docs/architecture/api-gateway-jwt-tests.md
+```
+
 ## Health endpoints
 
 ```http
@@ -190,6 +200,7 @@ Implemented foundation:
 - per-client traffic budget filter;
 - technical request logging filter;
 - route behavior tests;
+- jwt profile route tests;
 - Actuator health and info endpoints;
 - Dockerfile.
 
