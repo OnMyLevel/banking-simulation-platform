@@ -13,4 +13,5 @@ public interface OutboxEventRepository {
     List<OutboxEvent> findPendingEvents(Instant now, int limit);
     List<OutboxEvent> findByStatus(OutboxEventStatus status, int limit, int offset);
     Optional<OutboxEvent> findById(UUID eventId);
+    long countByStatus(OutboxEventStatus status);
 }
