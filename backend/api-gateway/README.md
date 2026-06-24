@@ -10,7 +10,8 @@ Spring Cloud Gateway entry point for the Banking Simulation Platform.
 - propagate request trace headers for distributed troubleshooting;
 - apply route access rules;
 - apply simple per-client traffic budgets;
-- prepare cross-cutting concerns such as JWT validation and request logging.
+- log technical request metadata without sensitive data;
+- prepare cross-cutting concerns such as JWT validation.
 
 ## Local port
 
@@ -100,6 +101,22 @@ HTTP/1.1 429 Too Many Requests
 Retry-After: 60
 ```
 
+## Request logs
+
+The Gateway logs technical metadata for each request:
+
+```text
+gateway_request method=<HTTP_METHOD> path=<REQUEST_PATH> status=<HTTP_STATUS> durationMs=<DURATION_MS> correlationId=<X_CORRELATION_ID>
+```
+
+Sensitive values are intentionally excluded: request body, response body, authorization headers, cookies and business data.
+
+Detailed logging guide:
+
+```text
+docs/architecture/api-gateway-logs.md
+```
+
 ## Health endpoints
 
 ```http
@@ -128,12 +145,12 @@ Implemented foundation:
 - request trace header filter;
 - route access rules;
 - per-client traffic budget filter;
+- technical request logging filter;
 - Actuator health and info endpoints;
 - Dockerfile.
 
 ## Next steps
 
-- add gateway-level request logging;
 - add JWT/OAuth2 validation;
 - replace in-memory traffic budgets with Redis-backed counters;
 - add gateway tests for route behavior.
