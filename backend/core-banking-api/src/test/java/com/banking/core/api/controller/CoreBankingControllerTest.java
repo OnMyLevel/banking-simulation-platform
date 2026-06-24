@@ -1,12 +1,14 @@
 package com.banking.core.api.controller;
 
 import com.banking.core.application.facade.CoreBankingFacade;
+import com.banking.core.config.InternalSecurityConfiguration;
 import com.banking.core.domain.model.Money;
 import com.banking.core.domain.model.Operation;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -19,6 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(CoreBankingController.class)
+@Import(InternalSecurityConfiguration.class)
 class CoreBankingControllerTest {
     @Autowired
     private MockMvc mockMvc;
