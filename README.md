@@ -34,6 +34,13 @@ DevOps Platform
 - `business-web-vue` — Business banking portal
 - `advisor-admin-angular` — Advisor and admin portal
 
+Frontend integration contract:
+
+```text
+docs/frontend/gateway-integration-contract.md
+docs/frontend/gateway-client-outline.md
+```
+
 ### Backend
 
 - `api-gateway` — single HTTP entry point and service router
@@ -97,6 +104,8 @@ Gateway documentation:
 
 ```text
 backend/api-gateway/README.md
+docs/architecture/api-gateway-public-contract.md
+docs/frontend/gateway-integration-contract.md
 ```
 
 ## MVP v1 scope
