@@ -64,6 +64,24 @@ services:
       postgres:
         condition: service_healthy
 
+  observability-api:
+    image: maven:3.9-eclipse-temurin-21
+    container_name: banking-test-observability-api
+    working_dir: /workspace/backend/observability-api
+    command: mvn -q spring-boot:run
+    volumes:
+      - ../..:/workspace
+      - maven_cache:/root/.m2
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/banking_simulation
+      SPRING_DATASOURCE_USERNAME: banking
+      SPRING_DATASOURCE_PASSWORD: banking
+    ports:
+      - "8085:8085"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   core-banking-api:
     image: maven:3.9-eclipse-temurin-21
     container_name: banking-test-core-api
@@ -75,15 +93,19 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
       BANKING_ACCOUNT_API_BASE_URL: http://account-banking-api:8082
+      BANKING_OBSERVABILITY_API_BASE_URL: http://observability-api:8085
       BANKING_LOG_FORWARDER_BASE_URL: http://fluent-bit:24224
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       BANKING_KAFKA_OUTBOX_TOPIC: banking.core.events
+      BANKING_OUTBOX_DESTINATION_TYPE: ${BANKING_OUTBOX_DESTINATION_TYPE:-OBSERVABILITY_HTTP}
     ports:
       - "8083:8083"
     depends_on:
       postgres:
         condition: service_healthy
       account-banking-api:
+        condition: service_started
+      observability-api:
         condition: service_started
       kafka:
         condition: service_healthy
