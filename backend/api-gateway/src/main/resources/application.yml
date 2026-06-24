@@ -28,6 +28,7 @@ spring:
 
 banking:
   gateway:
+    traffic-store-mode: ${BANKING_GATEWAY_TRAFFIC_STORE_MODE:IN_MEMORY}
     users-budget-per-minute: 120
     accounts-budget-per-minute: 60
     operations-budget-per-minute: 30

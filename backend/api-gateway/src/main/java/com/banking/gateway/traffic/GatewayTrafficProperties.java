@@ -4,10 +4,19 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "banking.gateway")
 public class GatewayTrafficProperties {
+    private TrafficStoreMode trafficStoreMode = TrafficStoreMode.IN_MEMORY;
     private int usersBudgetPerMinute = 120;
     private int accountsBudgetPerMinute = 60;
     private int operationsBudgetPerMinute = 30;
     private int defaultBudgetPerMinute = 180;
+
+    public TrafficStoreMode trafficStoreMode() {
+        return trafficStoreMode;
+    }
+
+    public void setTrafficStoreMode(TrafficStoreMode trafficStoreMode) {
+        this.trafficStoreMode = trafficStoreMode;
+    }
 
     public int usersBudgetPerMinute() {
         return usersBudgetPerMinute;
