@@ -5,6 +5,8 @@ This folder provides a Docker-based local test workflow so the platform can be t
 ## What it runs
 
 - PostgreSQL local database
+- Kafka local broker
+- Fluent Bit local log forwarder
 - Account Banking API
 - Core Banking API
 - Functional API tests with Newman/Postman
@@ -40,6 +42,44 @@ Then inspect the services manually:
 ```bash
 curl http://localhost:8082/accounts/00000000-0000-0000-0000-000000000000
 curl 'http://localhost:8083/operations/accounts/00000000-0000-0000-0000-000000000000?limit=1&offset=0'
+```
+
+## Local observability stack
+
+The local Docker environment now includes:
+
+```text
+Kafka      localhost:9092
+Fluent Bit localhost:24224
+```
+
+Core Banking API receives these default Docker values:
+
+```text
+SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+BANKING_KAFKA_OUTBOX_TOPIC=banking.core.events
+BANKING_LOG_FORWARDER_BASE_URL=http://fluent-bit:24224
+```
+
+To test a specific outbox destination locally, start the stack and run Core Banking API with one of these values:
+
+```text
+BANKING_OUTBOX_DESTINATION_TYPE=OBSERVABILITY_HTTP
+BANKING_OUTBOX_DESTINATION_TYPE=FLUENT_BIT
+BANKING_OUTBOX_DESTINATION_TYPE=KAFKA
+BANKING_OUTBOX_DESTINATION_TYPE=NOOP
+```
+
+Fluent Bit configuration is located in:
+
+```text
+observability/fluent-bit/fluent-bit.conf
+```
+
+The default Kafka topic used by the application is:
+
+```text
+banking.core.events
 ```
 
 ## CI execution
