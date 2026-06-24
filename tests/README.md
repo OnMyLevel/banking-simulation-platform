@@ -7,6 +7,7 @@ This folder provides a Docker-based local test workflow so the platform can be t
 - PostgreSQL local database
 - Kafka local broker
 - Fluent Bit local log forwarder
+- Observability API
 - Account Banking API
 - Core Banking API
 - Functional API tests with Newman/Postman
@@ -49,8 +50,9 @@ curl 'http://localhost:8083/operations/accounts/00000000-0000-0000-0000-00000000
 The local Docker environment now includes:
 
 ```text
-Kafka      localhost:9092
-Fluent Bit localhost:24224
+Kafka            localhost:9092
+Fluent Bit       localhost:24224
+Observability API localhost:8085
 ```
 
 Core Banking API receives these default Docker values:
@@ -59,15 +61,31 @@ Core Banking API receives these default Docker values:
 SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
 BANKING_KAFKA_OUTBOX_TOPIC=banking.core.events
 BANKING_LOG_FORWARDER_BASE_URL=http://fluent-bit:24224
+BANKING_OBSERVABILITY_API_BASE_URL=http://observability-api:8085
 ```
 
-To test a specific outbox destination locally, start the stack and run Core Banking API with one of these values:
+To validate all outbox destinations locally:
+
+```bash
+bash tests/scripts/run-outbox-delivery-tests.sh
+```
+
+To validate only one or two destinations:
+
+```bash
+DESTINATIONS="KAFKA" bash tests/scripts/run-outbox-delivery-tests.sh
+DESTINATIONS="FLUENT_BIT NOOP" bash tests/scripts/run-outbox-delivery-tests.sh
+```
+
+The script creates a test account, triggers a credit operation and verifies that the matching outbox row reaches `SENT` for each configured destination.
+
+Supported destination values:
 
 ```text
-BANKING_OUTBOX_DESTINATION_TYPE=OBSERVABILITY_HTTP
-BANKING_OUTBOX_DESTINATION_TYPE=FLUENT_BIT
-BANKING_OUTBOX_DESTINATION_TYPE=KAFKA
-BANKING_OUTBOX_DESTINATION_TYPE=NOOP
+OBSERVABILITY_HTTP
+FLUENT_BIT
+KAFKA
+NOOP
 ```
 
 Fluent Bit configuration is located in:
@@ -165,6 +183,16 @@ Covered scenarios:
 - insufficient funds rejection
 - missing Idempotency-Key rejection
 - paginated operation history
+
+### Outbox delivery tests
+
+Outbox delivery checks are defined in:
+
+```text
+tests/scripts/run-outbox-delivery-tests.sh
+```
+
+They validate the relay flow for configured destinations by checking the outbox status in PostgreSQL.
 
 ### Load tests
 
