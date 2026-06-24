@@ -72,6 +72,20 @@ services:
     volumes:
       - minio_data:/data
 
+  api-gateway:
+    build:
+      context: ./backend/api-gateway
+    container_name: banking-api-gateway
+    environment:
+      BANKING_USER_API_URI: http://user-management-api:8081
+      BANKING_ACCOUNT_API_URI: http://account-banking-api:8082
+      BANKING_CORE_API_URI: http://core-banking-api:8083
+    ports:
+      - "8080:8080"
+    depends_on:
+      user-management-api:
+        condition: service_started
+
   user-management-api:
     build:
       context: ./backend/user-management-api
