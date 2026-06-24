@@ -20,6 +20,12 @@ Target app:
 client-web-react
 ```
 
+Workflow:
+
+```text
+.github/workflows/frontend-client-web.yml
+```
+
 Checks:
 
 ```text
@@ -33,6 +39,12 @@ Goal:
 
 ```text
 Prove that the React app and Gateway client layer can be installed, checked and built in GitHub Actions.
+```
+
+Status:
+
+```text
+Started with the client web workflow.
 ```
 
 ## Phase 2 - Vue and Angular baselines
@@ -92,7 +104,7 @@ Add scheduled and pull-request checks for:
 Jobs:
 
 ```text
-client-web-react-checks
+client-web-react
 ```
 
 Steps:
