@@ -17,6 +17,8 @@ services:
   kafka:
     image: apache/kafka:3.8.0
     container_name: banking-test-kafka
+    profiles:
+      - outbox
     ports:
       - "9092:9092"
     environment:
@@ -40,6 +42,8 @@ services:
   fluent-bit:
     image: fluent/fluent-bit:3.2
     container_name: banking-test-fluent-bit
+    profiles:
+      - outbox
     ports:
       - "24224:24224"
     volumes:
@@ -67,6 +71,8 @@ services:
   observability-api:
     image: maven:3.9-eclipse-temurin-21
     container_name: banking-test-observability-api
+    profiles:
+      - outbox
     working_dir: /workspace/backend/observability-api
     command: mvn -q spring-boot:run
     volumes:
@@ -104,12 +110,6 @@ services:
       postgres:
         condition: service_healthy
       account-banking-api:
-        condition: service_started
-      observability-api:
-        condition: service_started
-      kafka:
-        condition: service_healthy
-      fluent-bit:
         condition: service_started
 
   newman:
