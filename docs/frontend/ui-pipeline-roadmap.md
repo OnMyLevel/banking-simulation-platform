@@ -56,12 +56,26 @@ business-web-vue
 advisor-admin-angular
 ```
 
+Vue workflow:
+
+```text
+.github/workflows/frontend-vue-app.yml
+```
+
 Each app must provide equivalent commands:
 
 ```text
+npm install
 npm run lint
 npm run test
 npm run build
+```
+
+Status:
+
+```text
+Vue checks started with the Vue app workflow.
+Angular checks are still planned after the Angular setup.
 ```
 
 ## Phase 3 - browser journeys
