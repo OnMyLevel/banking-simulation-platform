@@ -70,17 +70,45 @@ Core Banking API stores a row in `core_schema.outbox_events` in the same transac
 A scheduled relay reads pending rows and sends them through a destination-based sender router.
 
 ```text
-OutboxEventRelay
-  -> EventDeliveryRouter
-      -> RestEventSender        destination_type = OBSERVABILITY_HTTP
-      -> FluentBitEventSender   destination_type = FLUENT_BIT
-      -> KafkaEventSender       destination_type = KAFKA
-      -> NoopEventSender        destination_type = NOOP
+OutboxAuditPublisher
+  -> destinationType from banking.outbox.destination-type
+  -> outbox_events.destination_type
+      -> EventDeliveryRouter
+          -> RestEventSender        OBSERVABILITY_HTTP
+          -> FluentBitEventSender   FLUENT_BIT
+          -> KafkaEventSender       KAFKA
+          -> NoopEventSender        NOOP
 ```
 
 The outbox stores the event type, destination type, payload, retry count, last error and next retry date. This keeps the delivery transport replaceable without changing the domain service.
 
 If Observability API, the log forwarder or Kafka is unavailable, the banking operation remains completed. The relay marks the event as failed and retries later.
+
+## Outbox destination choice
+
+The destination used for newly created outbox events is configurable:
+
+```yaml
+banking:
+  outbox:
+    destination-type: OBSERVABILITY_HTTP
+```
+
+Supported values:
+
+```text
+OBSERVABILITY_HTTP
+FLUENT_BIT
+KAFKA
+NOOP
+```
+
+Recommended usage:
+
+- `OBSERVABILITY_HTTP` for direct integration with the Observability API.
+- `FLUENT_BIT` for log-forwarder-first delivery.
+- `KAFKA` for event-driven delivery.
+- `NOOP` for temporary local disablement.
 
 ## Fluent Bit forwarding
 
@@ -189,6 +217,7 @@ Implemented foundation:
 - account client port and HTTP adapter
 - audit publisher port
 - outbox-backed publisher adapter
+- configurable outbox destination
 - destination-based event sender router
 - REST sender strategy
 - Fluent Bit sender strategy
@@ -216,6 +245,7 @@ Implemented foundation:
 - HTTP sender tests
 - Fluent Bit sender tests
 - Kafka sender tests
+- configurable destination tests
 - EventDeliveryRouter tests
 - outbox ops facade tests
 - internal endpoint security tests
@@ -224,7 +254,6 @@ Implemented foundation:
 
 ## Next steps
 
-- decide which events should use `FLUENT_BIT`, `KAFKA` or `OBSERVABILITY_HTTP`
 - add Docker Compose support for Kafka and Fluent Bit if needed for local end-to-end tests
 - replace temporary local users with a JWT-based resource server configuration
 - add richer OpenAPI examples
