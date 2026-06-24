@@ -138,6 +138,16 @@ Detailed logging guide:
 docs/architecture/api-gateway-logs.md
 ```
 
+## Route behavior tests
+
+The Gateway has HTTP-level route behavior tests covering public health, denied internal paths, MVP public user paths, protected account and operation paths, and correlation id response behavior.
+
+Detailed test guide:
+
+```text
+docs/architecture/api-gateway-tests.md
+```
+
 ## Health endpoints
 
 ```http
@@ -169,6 +179,7 @@ Implemented foundation:
 - target identity role constants;
 - per-client traffic budget filter;
 - technical request logging filter;
+- route behavior tests;
 - Actuator health and info endpoints;
 - Dockerfile.
 
@@ -176,5 +187,4 @@ Implemented foundation:
 
 - complete identity provider environment configuration;
 - add signed-token integration tests;
-- replace in-memory traffic budgets with Redis-backed counters;
-- add gateway tests for route behavior.
+- replace in-memory traffic budgets with Redis-backed counters.
