@@ -34,9 +34,11 @@ DevOps Platform
 - `business-web-vue` — Business banking portal
 - `advisor-admin-angular` — Advisor and admin portal
 
-Frontend integration contract:
+Frontend architecture and integration contracts:
 
 ```text
+docs/frontend/multi-app-architecture.md
+docs/frontend/shared-frontend-rules.md
 docs/frontend/gateway-integration-contract.md
 docs/frontend/gateway-client-outline.md
 ```
