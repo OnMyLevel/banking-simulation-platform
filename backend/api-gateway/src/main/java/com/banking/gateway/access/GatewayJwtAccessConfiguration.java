@@ -9,10 +9,10 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 
 @Configuration
 @EnableWebFluxSecurity
-@Profile("!jwt")
-public class GatewayRouteRulesConfiguration {
+@Profile("jwt")
+public class GatewayJwtAccessConfiguration {
     @Bean
-    SecurityWebFilterChain gatewayRouteRules(ServerHttpSecurity http) {
+    SecurityWebFilterChain gatewayJwtRules(ServerHttpSecurity http) {
         return http
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
@@ -20,9 +20,11 @@ public class GatewayRouteRulesConfiguration {
                 .pathMatchers("/actuator/health", "/actuator/info").permitAll()
                 .pathMatchers("/internal/**").denyAll()
                 .pathMatchers("/api/users/**").permitAll()
-                .pathMatchers("/api/accounts/**", "/api/operations/**").authenticated()
+                .pathMatchers("/api/accounts/**").hasAnyRole(GatewayRoles.USER, GatewayRoles.ADVISOR, GatewayRoles.ADMIN)
+                .pathMatchers("/api/operations/**").hasAnyRole(GatewayRoles.USER, GatewayRoles.ADVISOR, GatewayRoles.ADMIN)
                 .anyExchange().denyAll()
             )
+            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> { }))
             .build();
     }
 }
