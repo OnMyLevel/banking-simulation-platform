@@ -9,27 +9,16 @@ import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
 import java.net.InetSocketAddress;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 @EnableConfigurationProperties(GatewayTrafficProperties.class)
 public class TrafficBudgetFilter implements WebFilter {
     private final GatewayTrafficProperties properties;
-    private final Clock clock;
-    private final Map<String, RequestBucket> buckets = new ConcurrentHashMap<>();
+    private final TrafficBudgetStore trafficBudgetStore;
 
-    public TrafficBudgetFilter(GatewayTrafficProperties properties) {
-        this(properties, Clock.systemUTC());
-    }
-
-    TrafficBudgetFilter(GatewayTrafficProperties properties, Clock clock) {
+    public TrafficBudgetFilter(GatewayTrafficProperties properties, TrafficBudgetStore trafficBudgetStore) {
         this.properties = properties;
-        this.clock = clock;
+        this.trafficBudgetStore = trafficBudgetStore;
     }
 
     @Override
@@ -41,23 +30,20 @@ public class TrafficBudgetFilter implements WebFilter {
 
         String bucketKey = clientKey(exchange) + ":" + routeFamily(path);
         int budget = budgetFor(path);
-        RequestBucket bucket = buckets.compute(bucketKey, (ignored, current) -> currentBucket(current));
 
-        if (bucket.count().incrementAndGet() > budget) {
-            exchange.getResponse().setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
-            exchange.getResponse().getHeaders().set("Retry-After", "60");
-            return exchange.getResponse().setComplete();
-        }
-
-        return chain.filter(exchange);
+        return trafficBudgetStore.consume(bucketKey, budget)
+            .flatMap(decision -> handleDecision(exchange, chain, decision));
     }
 
-    private RequestBucket currentBucket(RequestBucket current) {
-        Instant currentMinute = Instant.now(clock).truncatedTo(ChronoUnit.MINUTES);
-        if (current == null || !current.minute().equals(currentMinute)) {
-            return new RequestBucket(currentMinute, new AtomicInteger(0));
+    private Mono<Void> handleDecision(ServerWebExchange exchange, WebFilterChain chain, TrafficBudgetDecision decision) {
+        if (decision.allowed()) {
+            exchange.getResponse().getHeaders().set("X-RateLimit-Remaining", String.valueOf(decision.remainingRequests()));
+            return chain.filter(exchange);
         }
-        return current;
+
+        exchange.getResponse().setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
+        exchange.getResponse().getHeaders().set("Retry-After", String.valueOf(decision.retryAfterSeconds()));
+        return exchange.getResponse().setComplete();
     }
 
     private String clientKey(ServerWebExchange exchange) {
@@ -96,8 +82,5 @@ public class TrafficBudgetFilter implements WebFilter {
             return properties.operationsBudgetPerMinute();
         }
         return properties.defaultBudgetPerMinute();
-    }
-
-    private record RequestBucket(Instant minute, AtomicInteger count) {
     }
 }
