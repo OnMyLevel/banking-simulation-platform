@@ -133,6 +133,24 @@ Common behavior that must stay aligned:
 - 5xx technical error handling
 ```
 
+## UI check strategy
+
+All UI applications must follow the shared check plan:
+
+```text
+docs/frontend/ui-check-plan.md
+docs/frontend/ui-pipeline-roadmap.md
+```
+
+Baseline checks for each app:
+
+```text
+npm install
+npm run lint
+npm run test
+npm run build
+```
+
 ## Observability rules
 
 Frontend error screens and logs should preserve the correlation id returned by the Gateway.
@@ -146,9 +164,10 @@ Recommended order:
 ```text
 1. client-web-react setup
 2. multi-app architecture documentation
-3. business-web-vue setup
-4. advisor-admin-angular setup
-5. shared contracts package when duplication appears
+3. UI check plan
+4. business-web-vue setup
+5. advisor-admin-angular setup
+6. shared contracts package when duplication appears
 ```
 
 ## Related documents
@@ -156,6 +175,8 @@ Recommended order:
 ```text
 docs/frontend/gateway-integration-contract.md
 docs/frontend/gateway-client-outline.md
+docs/frontend/ui-check-plan.md
+docs/frontend/ui-pipeline-roadmap.md
 docs/architecture/api-gateway-public-contract.md
 docs/architecture/api-gateway-forwarding-tests.md
 backend/api-gateway/README.md
