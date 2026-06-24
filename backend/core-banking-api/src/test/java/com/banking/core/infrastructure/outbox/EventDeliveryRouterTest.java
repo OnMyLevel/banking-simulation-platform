@@ -18,22 +18,25 @@ class EventDeliveryRouterTest {
         OutboxEvent event = OutboxEvent.pending(UUID.randomUUID(), "CORE_OPERATION_COMPLETED", "OBSERVABILITY_HTTP", "{}");
         EventSender httpSender = mock(EventSender.class);
         EventSender noopSender = mock(EventSender.class);
+        OutboxDeliveryMetrics metrics = mock(OutboxDeliveryMetrics.class);
         when(httpSender.supports("OBSERVABILITY_HTTP")).thenReturn(true);
         when(noopSender.supports("OBSERVABILITY_HTTP")).thenReturn(false);
-        EventDeliveryRouter router = new EventDeliveryRouter(List.of(noopSender, httpSender));
+        EventDeliveryRouter router = new EventDeliveryRouter(List.of(noopSender, httpSender), metrics);
 
         router.send(event);
 
         verify(httpSender).send(event);
         verify(noopSender, never()).send(event);
+        verify(metrics).recordSuccess(event);
     }
 
     @Test
     void shouldRejectUnknownDestination() {
         OutboxEvent event = OutboxEvent.pending(UUID.randomUUID(), "CORE_OPERATION_COMPLETED", "KAFKA", "{}");
         EventSender sender = mock(EventSender.class);
+        OutboxDeliveryMetrics metrics = mock(OutboxDeliveryMetrics.class);
         when(sender.supports("KAFKA")).thenReturn(false);
-        EventDeliveryRouter router = new EventDeliveryRouter(List.of(sender));
+        EventDeliveryRouter router = new EventDeliveryRouter(List.of(sender), metrics);
 
         assertThatThrownBy(() -> router.send(event))
             .isInstanceOf(IllegalStateException.class)
