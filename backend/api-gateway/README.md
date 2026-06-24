@@ -11,6 +11,7 @@ Spring Cloud Gateway entry point for the Banking Simulation Platform.
 - apply route access rules;
 - apply simple per-client traffic budgets;
 - log technical request metadata without sensitive data;
+- expose Gateway telemetry;
 - prepare cross-cutting concerns such as identity validation.
 
 ## Local port
@@ -147,6 +148,22 @@ Detailed logging guide:
 docs/architecture/api-gateway-logs.md
 ```
 
+## Telemetry
+
+Gateway metrics are exposed through Actuator/Micrometer:
+
+```text
+banking.gateway.requests
+banking.gateway.request.duration
+banking.gateway.traffic.rejections
+```
+
+Detailed telemetry guide:
+
+```text
+docs/architecture/api-gateway-telemetry.md
+```
+
 ## Route behavior tests
 
 The Gateway has HTTP-level route behavior tests covering public health, denied internal paths, MVP public user paths, protected account and operation paths, and correlation id response behavior.
@@ -208,6 +225,7 @@ Implemented foundation:
 - route access rules;
 - target identity role constants;
 - per-client traffic budget filter;
+- Gateway telemetry;
 - technical request logging filter;
 - route behavior tests;
 - jwt profile route tests;
@@ -217,5 +235,5 @@ Implemented foundation:
 
 ## Next steps
 
-- replace in-memory traffic budgets with Redis-backed counters;
-- add Gateway observability metrics.
+- add Gateway dashboard and runbook;
+- refine external API naming.
