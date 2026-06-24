@@ -59,7 +59,7 @@ ops / ops      role OPS
 admin / admin  role ADMIN
 ```
 
-This must be replaced later by OAuth2/JWT or another centralized identity mechanism.
+The target security model is OAuth2/JWT or another centralized identity mechanism. The Core API now includes the OAuth2 Resource Server dependency and centralized role constants to prepare that migration while keeping local Basic Auth active for MVP testing.
 
 The retry endpoint puts the event back in `PENDING` and moves `next_retry_at` to now.
 
@@ -149,6 +149,8 @@ Implemented foundation:
 - scheduled outbox relay
 - internal outbox operation endpoints
 - Spring Security foundation for internal endpoints
+- OAuth2 Resource Server dependency prepared
+- centralized security role constants
 - HTTP timeout configuration
 - account dependency error mapping
 - repository port
@@ -172,6 +174,6 @@ Implemented foundation:
 
 ## Next steps
 
-- replace temporary local users with OAuth2/JWT
+- replace temporary local users with a JWT-based resource server configuration
 - add Kafka or Fluent Bit sender implementation if the architecture requires it
 - add richer OpenAPI examples
