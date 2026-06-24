@@ -36,7 +36,7 @@ DevOps Platform
 
 ### Backend
 
-- `api-gateway`
+- `api-gateway` — single HTTP entry point and service router
 - `user-management-api`
 - `account-banking-api`
 - `core-banking-api`
@@ -56,6 +56,7 @@ DevOps Platform
 - PostgreSQL
 - ClickHouse
 - Fluent Bit
+- Kafka
 - MinIO / S3
 - Tsuga dashboard
 
@@ -68,6 +69,34 @@ banking-simulation-platform/
 ├── infrastructure/
 ├── docs/
 └── .github/workflows/
+```
+
+## Local gateway
+
+Gateway port:
+
+```text
+8080
+```
+
+Routes:
+
+```text
+/api/users/**      -> user-management-api
+/api/accounts/**   -> account-banking-api
+/api/operations/** -> core-banking-api
+```
+
+Health endpoint:
+
+```http
+GET http://localhost:8080/actuator/health
+```
+
+Gateway documentation:
+
+```text
+backend/api-gateway/README.md
 ```
 
 ## MVP v1 scope
