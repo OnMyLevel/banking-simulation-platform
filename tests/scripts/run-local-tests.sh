@@ -6,6 +6,8 @@ COMPOSE_FILE="$ROOT_DIR/tests/docker/docker-compose.tests.yml"
 RUN_LOAD="${RUN_LOAD:-true}"
 RUN_SECURITY="${RUN_SECURITY:-true}"
 KEEP_ENV="${KEEP_ENV:-false}"
+ACCOUNT_API_WAIT_SECONDS="${ACCOUNT_API_WAIT_SECONDS:-240}"
+CORE_API_WAIT_SECONDS="${CORE_API_WAIT_SECONDS:-420}"
 
 cd "$ROOT_DIR"
 mkdir -p tests/postman/results tests/security
@@ -17,14 +19,28 @@ cleanup() {
 }
 trap cleanup EXIT
 
+show_service_output() {
+  echo "Account Banking API output:"
+  docker compose -f "$COMPOSE_FILE" logs --tail=120 account-banking-api || true
+
+  echo "Core Banking API output:"
+  docker compose -f "$COMPOSE_FILE" logs --tail=120 core-banking-api || true
+}
+
 echo "Starting local Docker test environment..."
 docker compose -f "$COMPOSE_FILE" up -d postgres account-banking-api core-banking-api
 
 echo "Waiting for Account Banking API..."
-bash tests/scripts/wait-for-http.sh "http://localhost:8082/accounts/00000000-0000-0000-0000-000000000000" 180
+if ! bash tests/scripts/wait-for-http.sh "http://localhost:8082/accounts/00000000-0000-0000-0000-000000000000" "$ACCOUNT_API_WAIT_SECONDS"; then
+  show_service_output
+  exit 1
+fi
 
 echo "Waiting for Core Banking API..."
-bash tests/scripts/wait-for-http.sh "http://localhost:8083/operations/accounts/00000000-0000-0000-0000-000000000000?limit=1&offset=0" 180 200
+if ! bash tests/scripts/wait-for-http.sh "http://localhost:8083/operations/accounts/00000000-0000-0000-0000-000000000000?limit=1&offset=0" "$CORE_API_WAIT_SECONDS" 200; then
+  show_service_output
+  exit 1
+fi
 
 echo "Running functional API tests with Newman..."
 docker compose -f "$COMPOSE_FILE" run --rm newman
