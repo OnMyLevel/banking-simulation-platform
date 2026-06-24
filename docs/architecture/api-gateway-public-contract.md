@@ -65,13 +65,19 @@ Public route tests must verify:
 - clean account routes are protected by Gateway access rules
 - clean operation routes are protected by Gateway access rules
 - clean operation routes are accepted for allowed jwt roles
+- clean public routes are forwarded to expected backend paths
 - old duplicated examples are removed from documentation
+```
+
+## Forwarding test guide
+
+```text
+docs/architecture/api-gateway-forwarding-tests.md
 ```
 
 ## Future work
 
 ```text
-- add backend stubs to verify exact path forwarding
 - define frontend API client methods from this contract
 - version the public contract if breaking changes are needed
 ```
