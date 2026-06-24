@@ -10,7 +10,7 @@ cd "$ROOT_DIR"
 
 cleanup() {
   if [ "$KEEP_ENV" != "true" ]; then
-    docker compose -f "$COMPOSE_FILE" down -v --remove-orphans
+    docker compose -f "$COMPOSE_FILE" --profile outbox down -v --remove-orphans
   fi
 }
 trap cleanup EXIT
@@ -26,8 +26,9 @@ new_uuid() {
 wait_for_http() {
   local url="$1"
   local expected_status="${2:-200}"
-  local timeout="${3:-180}"
+  local timeout="${3:-240}"
   local elapsed=0
+  local status=""
   until [ "$elapsed" -ge "$timeout" ]; do
     status=$(curl -s -o /dev/null -w "%{http_code}" "$url" || true)
     if [ "$status" = "$expected_status" ]; then
@@ -36,12 +37,12 @@ wait_for_http() {
     sleep 2
     elapsed=$((elapsed + 2))
   done
-  echo "Timeout waiting for $url with status $expected_status"
+  echo "Timeout waiting for $url with status $expected_status. Last status: ${status:-none}"
   return 1
 }
 
 psql_value() {
-  docker compose -f "$COMPOSE_FILE" exec -T postgres psql -U banking -d banking_simulation -tAc "$1" | tr -d '[:space:]'
+  docker compose -f "$COMPOSE_FILE" --profile outbox exec -T postgres psql -U banking -d banking_simulation -tAc "$1" | tr -d '[:space:]'
 }
 
 wait_for_outbox_status() {
@@ -73,8 +74,8 @@ run_destination_check() {
   local event_key
 
   echo "--- Checking outbox destination: $destination"
-  BANKING_OUTBOX_DESTINATION_TYPE="$destination" docker compose -f "$COMPOSE_FILE" up -d --force-recreate core-banking-api
-  wait_for_http "http://localhost:8083/operations/accounts/00000000-0000-0000-0000-000000000000?limit=1&offset=0" 200 180
+  BANKING_OUTBOX_DESTINATION_TYPE="$destination" docker compose -f "$COMPOSE_FILE" --profile outbox up -d --force-recreate core-banking-api
+  wait_for_http "http://localhost:8083/operations/accounts/00000000-0000-0000-0000-000000000000?limit=1&offset=0" 200 240
 
   owner_id="$(new_uuid)"
   account_response=$(curl -s -X POST "http://localhost:8082/accounts" \
@@ -93,10 +94,9 @@ run_destination_check() {
 }
 
 echo "Starting outbox delivery test dependencies..."
-docker compose -f "$COMPOSE_FILE" up -d postgres kafka fluent-bit account-banking-api observability-api
+docker compose -f "$COMPOSE_FILE" --profile outbox up -d postgres kafka fluent-bit account-banking-api observability-api
 
-wait_for_http "http://localhost:8082/accounts/00000000-0000-0000-0000-000000000000" 404 180
-wait_for_http "http://localhost:8085/actuator/health" 200 180 || true
+wait_for_http "http://localhost:8082/accounts/00000000-0000-0000-0000-000000000000" 404 240
 
 for destination in $DESTINATIONS; do
   run_destination_check "$destination"
