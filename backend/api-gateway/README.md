@@ -8,7 +8,9 @@ Spring Cloud Gateway entry point for the Banking Simulation Platform.
 - route public API traffic to backend services;
 - keep backend service URLs hidden from clients;
 - propagate request trace headers for distributed troubleshooting;
-- prepare cross-cutting concerns such as authentication, rate limiting and request logging.
+- apply route access rules;
+- apply simple per-client traffic budgets;
+- prepare cross-cutting concerns such as JWT validation and request logging.
 
 ## Local port
 
@@ -63,6 +65,41 @@ Detailed algorithm:
 docs/architecture/api-gateway-flow.md
 ```
 
+## Route rules
+
+| Route | Rule |
+| --- | --- |
+| `/actuator/health` | public |
+| `/actuator/info` | public |
+| `/api/users/**` | public for MVP |
+| `/api/accounts/**` | authenticated |
+| `/api/operations/**` | authenticated |
+| `/internal/**` | denied at Gateway |
+
+Detailed route and traffic rules:
+
+```text
+docs/architecture/api-gateway-rules.md
+```
+
+## Traffic budgets
+
+Starting values:
+
+```text
+/api/users/**      120 requests/minute/client
+/api/accounts/**    60 requests/minute/client
+/api/operations/**  30 requests/minute/client
+default            180 requests/minute/client
+```
+
+A caller over budget receives:
+
+```http
+HTTP/1.1 429 Too Many Requests
+Retry-After: 60
+```
+
 ## Health endpoints
 
 ```http
@@ -89,6 +126,8 @@ Implemented foundation:
 - Spring Cloud Gateway dependency;
 - route configuration for User, Account and Core APIs;
 - request trace header filter;
+- route access rules;
+- per-client traffic budget filter;
 - Actuator health and info endpoints;
 - Dockerfile.
 
@@ -96,5 +135,5 @@ Implemented foundation:
 
 - add gateway-level request logging;
 - add JWT/OAuth2 validation;
-- add rate limiting;
+- replace in-memory traffic budgets with Redis-backed counters;
 - add gateway tests for route behavior.
