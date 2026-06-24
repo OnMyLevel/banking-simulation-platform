@@ -73,14 +73,42 @@ A scheduled relay reads pending rows and sends them through a destination-based 
 OutboxEventRelay
   -> EventDeliveryRouter
       -> RestEventSender        destination_type = OBSERVABILITY_HTTP
+      -> FluentBitEventSender   destination_type = FLUENT_BIT
       -> NoopEventSender        destination_type = NOOP
       -> future Kafka sender    destination_type = KAFKA
-      -> future Fluent Bit      destination_type = FLUENT_BIT
 ```
 
-The outbox stores the event type, destination type, payload, retry count, last error and next retry date. This keeps the door open for Kafka, Fluent Bit or another transport later without changing the domain service.
+The outbox stores the event type, destination type, payload, retry count, last error and next retry date. This keeps the door open for Kafka or another transport later without changing the domain service.
 
-If Observability API is unavailable, the banking operation remains completed. The relay marks the event as failed and retries later.
+If Observability API or the log forwarder is unavailable, the banking operation remains completed. The relay marks the event as failed and retries later.
+
+## Fluent Bit forwarding
+
+The `FLUENT_BIT` destination is supported by `FluentBitEventSender` through the log forwarder HTTP input.
+
+Default local URL:
+
+```text
+http://localhost:24224
+```
+
+Default endpoint:
+
+```http
+POST /banking.core
+```
+
+Configuration prefix:
+
+```yaml
+banking:
+  log-forwarder:
+    base-url: http://localhost:24224
+    connect-timeout: 1s
+    read-timeout: 2s
+```
+
+Kafka is intentionally kept for a later PR. This PR only adds the Fluent Bit-compatible strategy.
 
 ## Account dependency
 
@@ -145,6 +173,7 @@ Implemented foundation:
 - outbox-backed publisher adapter
 - destination-based event sender router
 - REST sender strategy
+- Fluent Bit sender strategy
 - NOOP sender strategy
 - scheduled outbox relay
 - internal outbox operation endpoints
@@ -166,6 +195,7 @@ Implemented foundation:
 - unit tests for idempotency, balance, account status and audit rules
 - HTTP account adapter tests
 - HTTP sender tests
+- Fluent Bit sender tests
 - EventDeliveryRouter tests
 - outbox ops facade tests
 - internal endpoint security tests
@@ -174,6 +204,7 @@ Implemented foundation:
 
 ## Next steps
 
+- decide which events should use `FLUENT_BIT` instead of `OBSERVABILITY_HTTP`
 - replace temporary local users with a JWT-based resource server configuration
-- add Kafka or Fluent Bit sender implementation if the architecture requires it
+- add Kafka sender implementation later if the architecture requires it
 - add richer OpenAPI examples
