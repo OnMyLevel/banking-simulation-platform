@@ -41,35 +41,35 @@ class GatewaySignedAccessRouteBehaviorTest {
     }
 
     @Test
-    void shouldRejectAccountRouteWithoutBearer() {
+    void shouldRejectCleanAccountRouteWithoutBearer() {
         webTestClient.get()
-            .uri("/api/accounts/accounts/123")
+            .uri("/api/accounts/123")
             .exchange()
             .expectStatus().isUnauthorized();
     }
 
     @Test
-    void shouldAllowAccountRouteWithSignedUserAccess() {
+    void shouldAllowCleanAccountRouteWithSignedUserAccess() {
         webTestClient.get()
-            .uri("/api/accounts/accounts/123")
+            .uri("/api/accounts/123")
             .headers(headers -> headers.setBearerAuth(signedAccess(List.of("USER"))))
             .exchange()
             .expectStatus().is5xxServerError();
     }
 
     @Test
-    void shouldAllowOperationRouteWithSignedAdvisorAccess() {
+    void shouldAllowCleanOperationRouteWithSignedAdvisorAccess() {
         webTestClient.post()
-            .uri("/api/operations/operations/credits")
+            .uri("/api/operations/credits")
             .headers(headers -> headers.setBearerAuth(signedAccess(List.of("ADVISOR"))))
             .exchange()
             .expectStatus().is5xxServerError();
     }
 
     @Test
-    void shouldRejectOperationRouteWithSignedOpsAccess() {
+    void shouldRejectCleanOperationRouteWithSignedOpsAccess() {
         webTestClient.post()
-            .uri("/api/operations/operations/credits")
+            .uri("/api/operations/credits")
             .headers(headers -> headers.setBearerAuth(signedAccess(List.of("OPS"))))
             .exchange()
             .expectStatus().isForbidden();

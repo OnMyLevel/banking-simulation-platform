@@ -36,36 +36,36 @@ class GatewayJwtRouteBehaviorTest {
     }
 
     @Test
-    void shouldRejectAccountRouteWithoutJwt() {
+    void shouldRejectCleanAccountRouteWithoutJwt() {
         webTestClient.get()
-            .uri("/api/accounts/accounts/123")
+            .uri("/api/accounts/123")
             .exchange()
             .expectStatus().isUnauthorized();
     }
 
     @Test
-    void shouldAllowAccountRouteWithUserRole() {
+    void shouldAllowCleanAccountRouteWithUserRole() {
         webTestClient.mutateWith(mockJwt().authorities(new SimpleGrantedAuthority("ROLE_USER")))
             .get()
-            .uri("/api/accounts/accounts/123")
+            .uri("/api/accounts/123")
             .exchange()
             .expectStatus().is5xxServerError();
     }
 
     @Test
-    void shouldAllowOperationRouteWithAdvisorRole() {
+    void shouldAllowCleanOperationRouteWithAdvisorRole() {
         webTestClient.mutateWith(mockJwt().authorities(new SimpleGrantedAuthority("ROLE_ADVISOR")))
             .post()
-            .uri("/api/operations/operations/credits")
+            .uri("/api/operations/credits")
             .exchange()
             .expectStatus().is5xxServerError();
     }
 
     @Test
-    void shouldRejectOperationRouteWithOpsRole() {
+    void shouldRejectCleanOperationRouteWithOpsRole() {
         webTestClient.mutateWith(mockJwt().authorities(new SimpleGrantedAuthority("ROLE_OPS")))
             .post()
-            .uri("/api/operations/operations/credits")
+            .uri("/api/operations/credits")
             .exchange()
             .expectStatus().isForbidden();
     }
