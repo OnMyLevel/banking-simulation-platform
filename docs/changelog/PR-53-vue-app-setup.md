@@ -12,6 +12,7 @@
 - `frontend/vue-app/src/Root.test.ts`
 - `frontend/vue-app/src/vite-env.d.ts`
 - `frontend/vue-app/README.md`
+- `tests/scripts/run-local-tests.sh`
 
 ## Features
 
@@ -22,6 +23,8 @@
 - Adds placeholder application shell.
 - Adds first component test.
 - Adds package scripts for local development and checks.
+- Makes the local Docker suite wait longer for the Core Banking API.
+- Adds service output on local suite startup failure.
 
 ## Commands
 
@@ -33,6 +36,19 @@ npm run test
 npm run build
 ```
 
+## CI feedback fix
+
+The local Docker suite timed out while waiting for the Core Banking API endpoint.
+
+The startup wait is now configurable and longer by default:
+
+```text
+ACCOUNT_API_WAIT_SECONDS=240
+CORE_API_WAIT_SECONDS=420
+```
+
+The script also prints Account Banking API and Core Banking API output before failing, which makes the next failure easier to diagnose.
+
 ## Reasons and goals
 
 The project already has the React client setup and UI check plan. This PR adds the Vue application baseline before adding its dedicated workflow.
@@ -41,4 +57,5 @@ The project already has the React client setup and UI check plan. This PR adds t
 
 - Adds a frontend application skeleton.
 - No backend runtime behavior change.
+- Improves local suite stability in CI.
 - Prepares a future Vue workflow PR.
