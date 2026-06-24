@@ -18,7 +18,7 @@ class TrafficBudgetFilterTest {
     void shouldAllowRequestsWithinBudget() {
         GatewayTrafficProperties properties = new GatewayTrafficProperties();
         properties.setOperationsBudgetPerMinute(2);
-        TrafficBudgetFilter filter = new TrafficBudgetFilter(properties, fixedClock());
+        TrafficBudgetFilter filter = new TrafficBudgetFilter(properties, localStore());
         AtomicInteger calls = new AtomicInteger();
         WebFilterChain chain = exchange -> {
             calls.incrementAndGet();
@@ -35,7 +35,7 @@ class TrafficBudgetFilterTest {
     void shouldRejectRequestsAboveBudget() {
         GatewayTrafficProperties properties = new GatewayTrafficProperties();
         properties.setOperationsBudgetPerMinute(1);
-        TrafficBudgetFilter filter = new TrafficBudgetFilter(properties, fixedClock());
+        TrafficBudgetFilter filter = new TrafficBudgetFilter(properties, localStore());
         WebFilterChain chain = exchange -> Mono.empty();
 
         MockServerWebExchange first = exchange("/api/operations/operations/credits");
@@ -53,6 +53,10 @@ class TrafficBudgetFilterTest {
             MockServerHttpRequest.get(path)
                 .remoteAddress(new java.net.InetSocketAddress("127.0.0.1", 8080))
         );
+    }
+
+    private LocalTrafficBudgetStore localStore() {
+        return new LocalTrafficBudgetStore(fixedClock());
     }
 
     private Clock fixedClock() {
