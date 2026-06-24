@@ -2,7 +2,6 @@ package com.banking.core.infrastructure.outbox;
 
 import com.banking.core.domain.model.OutboxEvent;
 import com.banking.core.domain.repository.OutboxEventRepository;
-import com.banking.core.infrastructure.audit.HttpAuditPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,11 +15,11 @@ import java.time.temporal.ChronoUnit;
 public class OutboxEventRelay {
     private static final Logger LOGGER = LoggerFactory.getLogger(OutboxEventRelay.class);
     private final OutboxEventRepository repository;
-    private final HttpAuditPublisher sender;
+    private final EventDeliveryRouter router;
 
-    public OutboxEventRelay(OutboxEventRepository repository, HttpAuditPublisher sender) {
+    public OutboxEventRelay(OutboxEventRepository repository, EventDeliveryRouter router) {
         this.repository = repository;
-        this.sender = sender;
+        this.router = router;
     }
 
     @Scheduled(fixedDelayString = "${banking.outbox.relay-delay:5000}")
@@ -31,7 +30,7 @@ public class OutboxEventRelay {
 
     private void sendOne(OutboxEvent event) {
         try {
-            sender.send(event);
+            router.send(event);
             repository.persist(event.sent());
         } catch (RuntimeException exception) {
             LOGGER.warn("Outbox event delivery failed for event {}", event.id());
