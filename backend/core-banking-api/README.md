@@ -37,6 +37,17 @@ Sensitive write endpoints require:
 Idempotency-Key: unique-client-operation-key
 ```
 
+## Internal outbox operations
+
+These endpoints are internal operations endpoints. They must be protected by admin or ops security later.
+
+```http
+GET /internal/outbox-events?status=FAILED&limit=25&offset=0
+POST /internal/outbox-events/{eventId}/retry
+```
+
+The retry endpoint puts the event back in `PENDING` and moves `next_retry_at` to now.
+
 ## Event outbox
 
 Core Banking API stores a row in `core_schema.outbox_events` in the same transaction as the banking operation.
@@ -121,6 +132,7 @@ Implemented foundation:
 - REST sender strategy
 - NOOP sender strategy
 - scheduled outbox relay
+- internal outbox operation endpoints
 - HTTP timeout configuration
 - account dependency error mapping
 - repository port
@@ -137,11 +149,12 @@ Implemented foundation:
 - HTTP account adapter tests
 - HTTP sender tests
 - EventDeliveryRouter tests
+- outbox ops facade tests
 - Testcontainers repository integration test
 - OpenAPI contract
 
 ## Next steps
 
-- add configurable retry policy
+- secure internal endpoints with admin or ops role
 - add Kafka or Fluent Bit sender implementation if the architecture requires it
 - add richer OpenAPI examples

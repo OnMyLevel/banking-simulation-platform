@@ -8,6 +8,8 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public class OutboxEventJpaAdapter implements OutboxEventRepository {
@@ -32,5 +34,18 @@ public class OutboxEventJpaAdapter implements OutboxEventRepository {
             .stream()
             .map(OutboxEventMapper::toDomain)
             .toList();
+    }
+
+    @Override
+    public List<OutboxEvent> findByStatus(OutboxEventStatus status, int limit, int offset) {
+        return jpaRepository.findByStatusOrderByCreatedAtDesc(status, PageRequest.of(offset / limit, limit))
+            .stream()
+            .map(OutboxEventMapper::toDomain)
+            .toList();
+    }
+
+    @Override
+    public Optional<OutboxEvent> findById(UUID eventId) {
+        return jpaRepository.findById(eventId).map(OutboxEventMapper::toDomain);
     }
 }
