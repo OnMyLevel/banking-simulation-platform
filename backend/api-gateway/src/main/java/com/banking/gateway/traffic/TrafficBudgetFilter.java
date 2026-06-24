@@ -1,5 +1,6 @@
 package com.banking.gateway.traffic;
 
+import com.banking.gateway.telemetry.GatewayTelemetry;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -15,10 +16,12 @@ import java.net.InetSocketAddress;
 public class TrafficBudgetFilter implements WebFilter {
     private final GatewayTrafficProperties properties;
     private final TrafficBudgetStore trafficBudgetStore;
+    private final GatewayTelemetry gatewayTelemetry;
 
-    public TrafficBudgetFilter(GatewayTrafficProperties properties, TrafficBudgetStore trafficBudgetStore) {
+    public TrafficBudgetFilter(GatewayTrafficProperties properties, TrafficBudgetStore trafficBudgetStore, GatewayTelemetry gatewayTelemetry) {
         this.properties = properties;
         this.trafficBudgetStore = trafficBudgetStore;
+        this.gatewayTelemetry = gatewayTelemetry;
     }
 
     @Override
@@ -32,15 +35,16 @@ public class TrafficBudgetFilter implements WebFilter {
         int budget = budgetFor(path);
 
         return trafficBudgetStore.consume(bucketKey, budget)
-            .flatMap(decision -> handleDecision(exchange, chain, decision));
+            .flatMap(decision -> handleDecision(exchange, chain, decision, path));
     }
 
-    private Mono<Void> handleDecision(ServerWebExchange exchange, WebFilterChain chain, TrafficBudgetDecision decision) {
+    private Mono<Void> handleDecision(ServerWebExchange exchange, WebFilterChain chain, TrafficBudgetDecision decision, String path) {
         if (decision.allowed()) {
             exchange.getResponse().getHeaders().set("X-RateLimit-Remaining", String.valueOf(decision.remainingRequests()));
             return chain.filter(exchange);
         }
 
+        gatewayTelemetry.recordTrafficRejection(path);
         exchange.getResponse().setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
         exchange.getResponse().getHeaders().set("Retry-After", String.valueOf(decision.retryAfterSeconds()));
         return exchange.getResponse().setComplete();

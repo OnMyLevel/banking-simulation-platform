@@ -1,6 +1,7 @@
 package com.banking.gateway.logging;
 
 import com.banking.gateway.filter.CorrelationIdFilter;
+import com.banking.gateway.telemetry.GatewayTelemetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -18,6 +19,11 @@ import java.time.Instant;
 public class GatewayRequestLoggingFilter implements GlobalFilter, Ordered {
     private static final Logger LOGGER = LoggerFactory.getLogger(GatewayRequestLoggingFilter.class);
     private static final int FILTER_ORDER = -90;
+    private final GatewayTelemetry gatewayTelemetry;
+
+    public GatewayRequestLoggingFilter(GatewayTelemetry gatewayTelemetry) {
+        this.gatewayTelemetry = gatewayTelemetry;
+    }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -28,7 +34,7 @@ public class GatewayRequestLoggingFilter implements GlobalFilter, Ordered {
 
         return chain.filter(exchange)
             .doOnSuccess(ignored -> logExchange(exchange, method, path, correlationId, startedAt))
-            .doOnError(error -> logExchangeError(method, path, correlationId, startedAt, error));
+            .doOnError(error -> logExchangeError(exchange, method, path, correlationId, startedAt, error));
     }
 
     @Override
@@ -38,13 +44,18 @@ public class GatewayRequestLoggingFilter implements GlobalFilter, Ordered {
 
     private void logExchange(ServerWebExchange exchange, String method, String path, String correlationId, Instant startedAt) {
         HttpStatusCode statusCode = exchange.getResponse().getStatusCode();
+        Duration duration = Duration.between(startedAt, Instant.now());
+        long durationMs = duration.toMillis();
         int status = statusCode == null ? 200 : statusCode.value();
-        long durationMs = Duration.between(startedAt, Instant.now()).toMillis();
+        gatewayTelemetry.recordRequest(method, path, statusCode, duration);
         LOGGER.info("gateway_request method={} path={} status={} durationMs={} correlationId={}", method, path, status, durationMs, safe(correlationId));
     }
 
-    private void logExchangeError(String method, String path, String correlationId, Instant startedAt, Throwable error) {
-        long durationMs = Duration.between(startedAt, Instant.now()).toMillis();
+    private void logExchangeError(ServerWebExchange exchange, String method, String path, String correlationId, Instant startedAt, Throwable error) {
+        HttpStatusCode statusCode = exchange.getResponse().getStatusCode();
+        Duration duration = Duration.between(startedAt, Instant.now());
+        long durationMs = duration.toMillis();
+        gatewayTelemetry.recordRequest(method, path, statusCode, duration);
         LOGGER.warn("gateway_request_error method={} path={} durationMs={} correlationId={} error={}", method, path, durationMs, safe(correlationId), error.getClass().getSimpleName());
     }
 

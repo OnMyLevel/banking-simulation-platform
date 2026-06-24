@@ -1,5 +1,7 @@
 package com.banking.gateway.traffic;
 
+import com.banking.gateway.telemetry.GatewayTelemetry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
@@ -18,7 +20,8 @@ class TrafficBudgetFilterTest {
     void shouldAllowRequestsWithinBudget() {
         GatewayTrafficProperties properties = new GatewayTrafficProperties();
         properties.setOperationsBudgetPerMinute(2);
-        TrafficBudgetFilter filter = new TrafficBudgetFilter(properties, localStore());
+        SimpleMeterRegistry meterRegistry = new SimpleMeterRegistry();
+        TrafficBudgetFilter filter = new TrafficBudgetFilter(properties, localStore(), new GatewayTelemetry(meterRegistry));
         AtomicInteger calls = new AtomicInteger();
         WebFilterChain chain = exchange -> {
             calls.incrementAndGet();
@@ -35,7 +38,8 @@ class TrafficBudgetFilterTest {
     void shouldRejectRequestsAboveBudget() {
         GatewayTrafficProperties properties = new GatewayTrafficProperties();
         properties.setOperationsBudgetPerMinute(1);
-        TrafficBudgetFilter filter = new TrafficBudgetFilter(properties, localStore());
+        SimpleMeterRegistry meterRegistry = new SimpleMeterRegistry();
+        TrafficBudgetFilter filter = new TrafficBudgetFilter(properties, localStore(), new GatewayTelemetry(meterRegistry));
         WebFilterChain chain = exchange -> Mono.empty();
 
         MockServerWebExchange first = exchange("/api/operations/operations/credits");
@@ -46,6 +50,7 @@ class TrafficBudgetFilterTest {
 
         assertThat(second.getResponse().getStatusCode().value()).isEqualTo(429);
         assertThat(second.getResponse().getHeaders().getFirst("Retry-After")).isEqualTo("60");
+        assertThat(meterRegistry.find("banking.gateway.traffic.rejections").counter().count()).isEqualTo(1.0);
     }
 
     private MockServerWebExchange exchange(String path) {

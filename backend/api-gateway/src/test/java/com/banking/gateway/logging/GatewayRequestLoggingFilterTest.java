@@ -1,6 +1,8 @@
 package com.banking.gateway.logging;
 
 import com.banking.gateway.filter.CorrelationIdFilter;
+import com.banking.gateway.telemetry.GatewayTelemetry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Test;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
@@ -13,7 +15,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class GatewayRequestLoggingFilterTest {
-    private final GatewayRequestLoggingFilter filter = new GatewayRequestLoggingFilter();
+    private final SimpleMeterRegistry meterRegistry = new SimpleMeterRegistry();
+    private final GatewayRequestLoggingFilter filter = new GatewayRequestLoggingFilter(new GatewayTelemetry(meterRegistry));
 
     @Test
     void shouldContinueFilterChain() {
@@ -30,6 +33,7 @@ class GatewayRequestLoggingFilterTest {
         filter.filter(exchange, chain).block();
 
         assertThat(called).isTrue();
+        assertThat(meterRegistry.find("banking.gateway.requests").counter().count()).isEqualTo(1.0);
     }
 
     @Test
