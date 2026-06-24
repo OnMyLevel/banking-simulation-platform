@@ -47,17 +47,17 @@ class GatewayRouteBehaviorTest {
     }
 
     @Test
-    void shouldProtectAccountRoutes() {
+    void shouldProtectCleanAccountRoutes() {
         webTestClient.get()
-            .uri("/api/accounts/accounts/123")
+            .uri("/api/accounts/123")
             .exchange()
             .expectStatus().isUnauthorized();
     }
 
     @Test
-    void shouldProtectOperationRoutes() {
+    void shouldProtectCleanOperationRoutes() {
         webTestClient.post()
-            .uri("/api/operations/operations/credits")
+            .uri("/api/operations/credits")
             .exchange()
             .expectStatus().isUnauthorized();
     }
