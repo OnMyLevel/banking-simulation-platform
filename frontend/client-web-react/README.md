@@ -10,6 +10,18 @@ Technology target:
 - React Query
 - Tailwind CSS
 
+## Setup
+
+From this folder:
+
+```bash
+npm install
+npm run dev
+npm run build
+npm run test
+npm run lint
+```
+
 ## API client foundation
 
 The frontend API layer starts in:
@@ -22,7 +34,7 @@ Current modules:
 
 ```text
 apiErrors.ts
-GatewayClient.ts equivalent: gatewayClient.ts
+gatewayClient.ts
 accountsApi.ts
 operationsApi.ts
 profileApi.ts
@@ -49,4 +61,4 @@ docs/frontend/gateway-client-outline.md
 
 ## Current status
 
-The API client foundation is framework-light and can be reused once the React/Vite setup is added.
+The React and Vite foundation is in place with TypeScript, Vitest and ESLint configuration.
