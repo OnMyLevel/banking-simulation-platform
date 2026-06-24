@@ -11,7 +11,7 @@ Spring Cloud Gateway entry point for the Banking Simulation Platform.
 - apply route access rules;
 - apply simple per-client traffic budgets;
 - log technical request metadata without sensitive data;
-- prepare cross-cutting concerns such as JWT validation.
+- prepare cross-cutting concerns such as identity validation.
 
 ## Local port
 
@@ -83,6 +83,27 @@ Detailed route and traffic rules:
 docs/architecture/api-gateway-rules.md
 ```
 
+## Identity preparation
+
+The Gateway now contains the dependencies and constants needed for the future identity provider mode.
+
+Target roles:
+
+```text
+USER
+ADVISOR
+ADMIN
+OPS
+```
+
+The default local profile remains the MVP fallback. A dedicated profile contains the target route rules and can be completed once the identity provider configuration is available.
+
+Detailed identity model:
+
+```text
+docs/architecture/gateway-identity-model.md
+```
+
 ## Traffic budgets
 
 Starting values:
@@ -141,9 +162,11 @@ Implemented foundation:
 
 - Spring Boot application;
 - Spring Cloud Gateway dependency;
+- identity provider dependency prepared;
 - route configuration for User, Account and Core APIs;
 - request trace header filter;
 - route access rules;
+- target identity role constants;
 - per-client traffic budget filter;
 - technical request logging filter;
 - Actuator health and info endpoints;
@@ -151,6 +174,7 @@ Implemented foundation:
 
 ## Next steps
 
-- add JWT/OAuth2 validation;
+- complete identity provider environment configuration;
+- add signed-token integration tests;
 - replace in-memory traffic budgets with Redis-backed counters;
 - add gateway tests for route behavior.
