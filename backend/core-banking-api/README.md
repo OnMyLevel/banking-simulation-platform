@@ -39,12 +39,27 @@ Idempotency-Key: unique-client-operation-key
 
 ## Internal outbox operations
 
-These endpoints are internal operations endpoints. They must be protected by admin or ops security later.
+These endpoints are internal operations endpoints and are protected with Spring Security.
 
 ```http
 GET /internal/outbox-events?status=FAILED&limit=25&offset=0
 POST /internal/outbox-events/{eventId}/retry
 ```
+
+Access rule:
+
+```text
+/internal/** requires OPS or ADMIN role
+```
+
+Temporary local users are available for MVP testing only:
+
+```text
+ops / ops      role OPS
+admin / admin  role ADMIN
+```
+
+This must be replaced later by OAuth2/JWT or another centralized identity mechanism.
 
 The retry endpoint puts the event back in `PENDING` and moves `next_retry_at` to now.
 
@@ -133,6 +148,7 @@ Implemented foundation:
 - NOOP sender strategy
 - scheduled outbox relay
 - internal outbox operation endpoints
+- Spring Security foundation for internal endpoints
 - HTTP timeout configuration
 - account dependency error mapping
 - repository port
@@ -150,11 +166,12 @@ Implemented foundation:
 - HTTP sender tests
 - EventDeliveryRouter tests
 - outbox ops facade tests
+- internal endpoint security tests
 - Testcontainers repository integration test
 - OpenAPI contract
 
 ## Next steps
 
-- secure internal endpoints with admin or ops role
+- replace temporary local users with OAuth2/JWT
 - add Kafka or Fluent Bit sender implementation if the architecture requires it
 - add richer OpenAPI examples
