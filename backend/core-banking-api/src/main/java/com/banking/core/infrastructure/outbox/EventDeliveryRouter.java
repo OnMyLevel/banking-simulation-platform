@@ -8,9 +8,11 @@ import java.util.List;
 @Component
 public class EventDeliveryRouter {
     private final List<EventSender> senders;
+    private final OutboxDeliveryMetrics metrics;
 
-    public EventDeliveryRouter(List<EventSender> senders) {
+    public EventDeliveryRouter(List<EventSender> senders, OutboxDeliveryMetrics metrics) {
         this.senders = senders;
+        this.metrics = metrics;
     }
 
     public void send(OutboxEvent event) {
@@ -18,6 +20,12 @@ public class EventDeliveryRouter {
             .filter(candidate -> candidate.supports(event.destinationType()))
             .findFirst()
             .orElseThrow(() -> new IllegalStateException("No delivery sender for destination: " + event.destinationType()));
-        sender.send(event);
+        try {
+            sender.send(event);
+            metrics.recordSuccess(event);
+        } catch (RuntimeException exception) {
+            metrics.recordFailure(event);
+            throw exception;
+        }
     }
 }
