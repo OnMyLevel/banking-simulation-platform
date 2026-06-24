@@ -1,0 +1,33 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: user-management-api
+          uri: ${BANKING_USER_API_URI:http://localhost:8081}
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - StripPrefix=2
+        - id: account-banking-api
+          uri: ${BANKING_ACCOUNT_API_URI:http://localhost:8082}
+          predicates:
+            - Path=/api/accounts/**
+          filters:
+            - StripPrefix=1
+        - id: core-banking-api
+          uri: ${BANKING_CORE_API_URI:http://localhost:8083}
+          predicates:
+            - Path=/api/operations/**
+          filters:
+            - StripPrefix=1
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
