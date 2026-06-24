@@ -48,4 +48,9 @@ public class OutboxEventJpaAdapter implements OutboxEventRepository {
     public Optional<OutboxEvent> findById(UUID eventId) {
         return jpaRepository.findById(eventId).map(OutboxEventMapper::toDomain);
     }
+
+    @Override
+    public long countByStatus(OutboxEventStatus status) {
+        return jpaRepository.countByStatus(status);
+    }
 }
