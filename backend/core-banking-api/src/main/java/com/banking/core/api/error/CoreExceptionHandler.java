@@ -5,6 +5,7 @@ import com.banking.core.domain.exception.CoreAccountNotFoundException;
 import com.banking.core.domain.exception.CoreAccountUnavailableException;
 import com.banking.core.domain.exception.IdempotencyKeyRequiredException;
 import com.banking.core.domain.exception.InsufficientFundsException;
+import com.banking.core.domain.exception.OutboxEventNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -44,6 +45,12 @@ public class CoreExceptionHandler {
     @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     public CoreErrorResponse handleAccountServiceUnavailable(AccountServiceUnavailableException ex) {
         return error("ACCOUNT_SERVICE_UNAVAILABLE", ex.getMessage());
+    }
+
+    @ExceptionHandler(OutboxEventNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public CoreErrorResponse handleOutboxEventNotFound(OutboxEventNotFoundException ex) {
+        return error("OUTBOX_EVENT_NOT_FOUND", ex.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
