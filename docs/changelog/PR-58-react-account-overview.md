@@ -25,6 +25,7 @@
 - Narrows the admin UI workflow trigger to Angular app changes.
 - Pins Angular dependencies to a stable compatible range.
 - Cleans deprecated TypeScript options in the Angular app.
+- Adds the missing Angular Karma Jasmine HTML reporter dependency.
 
 ## Gateway behavior
 
@@ -46,6 +47,7 @@ The fix now:
 - pins TypeScript to ~5.5.4
 - removes deprecated TypeScript options from the Angular tsconfig
 - uses Node 20 for the pinned Angular baseline
+- adds karma-jasmine-html-reporter for Angular unit tests
 ```
 
 ## Reasons and goals
