@@ -5,9 +5,11 @@ Framework-neutral frontend types and helpers.
 ## Scope
 
 ```text
-- header names
+- client field names
 - API error type
 - API metadata type
+- API result type
+- retry delay parser
 - HTTP status helpers
 ```
 
@@ -27,10 +29,17 @@ npm run build
 ```text
 src/api-error.ts
 src/names.ts
+src/retry.ts
 src/status.ts
 src/index.ts
 ```
 
+## CI
+
+```text
+.github/workflows/common-types.yml
+```
+
 ## Usage direction
 
-React, Vue and Angular apps can later import these neutral contracts to keep Gateway error and metadata handling aligned.
+React, Vue and Angular apps can later import these neutral contracts to keep Gateway error, metadata and status handling aligned.
