@@ -3,6 +3,7 @@
 ## Files changed
 
 - `.github/workflows/frontend-vue-app.yml`
+- `frontend/vue-app/vitest.config.ts`
 - `docs/frontend/ui-pipeline-roadmap.md`
 
 ## Features
@@ -12,6 +13,7 @@
 - Runs lint command.
 - Runs unit checks.
 - Runs build command.
+- Adds Vue plugin support to the Vitest configuration.
 - Limits workflow execution to Vue app changes.
 - Updates UI pipeline roadmap.
 
@@ -23,6 +25,12 @@ npm run lint
 npm run test
 npm run build
 ```
+
+## CI feedback fix
+
+The unit check failed because Vitest did not load the Vue plugin while importing `Root.vue`.
+
+The Vitest configuration now uses `@vitejs/plugin-vue`, so `.vue` single-file components can be transformed during tests.
 
 ## Reasons and goals
 
