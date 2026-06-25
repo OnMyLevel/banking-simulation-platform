@@ -3,9 +3,10 @@ import { describe, expect, it } from 'vitest';
 import Root from './Root.vue';
 
 describe('Root', () => {
-  it('renders company banking title', () => {
+  it('renders the vue app shell', () => {
     const wrapper = mount(Root);
 
+    expect(wrapper.text()).toContain('Company dashboard');
     expect(wrapper.text()).toContain('Company banking portal');
   });
 });
