@@ -7,6 +7,8 @@
 - `frontend/client-web-react/src/features/accounts/AccountOverview.test.tsx`
 - `frontend/client-web-react/src/styles.css`
 - `frontend/client-web-react/README.md`
+- `frontend/angular-app/package.json`
+- `frontend/angular-app/tsconfig.json`
 - `.github/workflows/admin-ui.yml`
 
 ## Features
@@ -21,7 +23,8 @@
 - Adds component tests for success and error states.
 - Updates the React app README.
 - Narrows the admin UI workflow trigger to Angular app changes.
-- Updates the admin UI workflow to Node 24.
+- Pins Angular dependencies to a stable compatible range.
+- Cleans deprecated TypeScript options in the Angular app.
 
 ## Gateway behavior
 
@@ -33,13 +36,16 @@
 
 ## CI feedback fix
 
-The admin UI workflow was running on every frontend change and used Node 20, while the current Angular CLI requires a newer Node version.
+The admin UI workflow was running on every frontend change and Angular dependencies were using `latest`, which pulled an incompatible Angular/TypeScript combination.
 
-The workflow now:
+The fix now:
 
 ```text
-- runs only for frontend/angular-app and admin-ui workflow changes
-- uses Node 24
+- runs admin UI checks only for frontend/angular-app and admin-ui workflow changes
+- pins Angular packages to ~18.2.0
+- pins TypeScript to ~5.5.4
+- removes deprecated TypeScript options from the Angular tsconfig
+- uses Node 20 for the pinned Angular baseline
 ```
 
 ## Reasons and goals
@@ -51,4 +57,5 @@ React, Vue and Angular baselines are now in place with CI and shared Gateway ali
 - Adds a first customer-facing React screen.
 - No backend runtime behavior change.
 - Keeps frontend integration through the API Gateway client.
+- Stabilizes the Angular CI baseline.
 - Reduces unrelated CI runs for React-only frontend changes.
