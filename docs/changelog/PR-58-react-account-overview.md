@@ -26,6 +26,7 @@
 - Pins Angular dependencies to a stable compatible range.
 - Cleans deprecated TypeScript options in the Angular app.
 - Adds the missing Angular Karma Jasmine HTML reporter dependency.
+- Adds the missing Angular platform browser dynamic dependency required by Angular tests.
 
 ## Gateway behavior
 
@@ -48,6 +49,7 @@ The fix now:
 - removes deprecated TypeScript options from the Angular tsconfig
 - uses Node 20 for the pinned Angular baseline
 - adds karma-jasmine-html-reporter for Angular unit tests
+- adds @angular/platform-browser-dynamic for Angular unit tests
 ```
 
 ## Reasons and goals
