@@ -7,8 +7,9 @@ Angular frontend application for support and operational journeys.
 ```text
 - Angular setup
 - TypeScript setup
-- placeholder application shell
-- first component test
+- advisor dashboard shell
+- ready, empty and error display states
+- component tests
 ```
 
 ## Commands
@@ -21,10 +22,19 @@ npm run test
 npm run build
 ```
 
+## Main screen
+
+```text
+src/app/advisor-dashboard.component.ts
+```
+
+The dashboard prepares the advisor workspace for future Gateway-backed data. It currently renders static state through component inputs.
+
 ## Related documents
 
 ```text
 docs/frontend/multi-app-architecture.md
 docs/frontend/shared-frontend-rules.md
+docs/frontend/ui-gateway-alignment.md
 docs/frontend/ui-check-plan.md
 ```
