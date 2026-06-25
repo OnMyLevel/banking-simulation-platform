@@ -21,12 +21,17 @@ body {
   padding: 2rem;
 }
 
-.hero-card {
-  width: min(720px, 100%);
+.account-card {
+  width: min(760px, 100%);
   padding: 2rem;
   border-radius: 1.5rem;
   background: white;
   box-shadow: 0 20px 60px rgb(15 23 42 / 12%);
+}
+
+.error-card {
+  border: 1px solid #fecaca;
+  background: #fff7f7;
 }
 
 .eyebrow {
@@ -48,4 +53,37 @@ p {
   margin: 0;
   color: #4b5563;
   line-height: 1.7;
+}
+
+.account-details {
+  display: grid;
+  gap: 1rem;
+  margin: 1.5rem 0 0;
+}
+
+.account-details div {
+  padding: 1rem;
+  border-radius: 1rem;
+  background: #f8fafc;
+}
+
+dt {
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+dd {
+  margin: 0.35rem 0 0;
+  color: #0f172a;
+  font-size: 1.1rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.support-ref {
+  margin-top: 1rem;
+  font-size: 0.9rem;
 }
