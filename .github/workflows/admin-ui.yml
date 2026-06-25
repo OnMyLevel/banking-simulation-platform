@@ -3,12 +3,14 @@ name: Admin UI Checks
 on:
   pull_request:
     paths:
-      - 'frontend/**'
+      - 'frontend/angular-app/**'
+      - '.github/workflows/admin-ui.yml'
   push:
     branches:
       - main
     paths:
-      - 'frontend/**'
+      - 'frontend/angular-app/**'
+      - '.github/workflows/admin-ui.yml'
 
 jobs:
   admin-ui:

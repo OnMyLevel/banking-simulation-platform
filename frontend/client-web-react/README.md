@@ -57,8 +57,19 @@ Gateway contract:
 ```text
 docs/frontend/gateway-integration-contract.md
 docs/frontend/gateway-client-outline.md
+docs/frontend/ui-gateway-alignment.md
 ```
+
+## Account overview
+
+The first screen is implemented in:
+
+```text
+src/features/accounts/AccountOverview.tsx
+```
+
+It loads account data through `accountsApi`, handles loading, success and error states, and displays the correlation id when available.
 
 ## Current status
 
-The React and Vite foundation is in place with TypeScript, Vitest and ESLint configuration.
+The React and Vite foundation is in place with TypeScript, Vitest, ESLint configuration and the first account overview screen.
