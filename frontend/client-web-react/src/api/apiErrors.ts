@@ -1,10 +1,13 @@
-export type GatewayApiError = {
-  status: number;
-  message: string;
-  code?: string;
-  correlationId?: string;
-  retryAfterSeconds?: number;
-};
+import type { FrontendApiError } from '../../../common-types/src';
+import {
+  shouldAskForSignIn,
+  shouldShowAccessDenied,
+  shouldShowNotFound,
+  shouldShowTechnicalMessage,
+  shouldShowThrottleMessage,
+} from '../../../common-types/src';
+
+export type GatewayApiError = FrontendApiError;
 
 export class GatewayApiException extends Error {
   readonly status: number;
@@ -30,29 +33,20 @@ export function messageForStatus(status: number): string {
   if (status === 400) {
     return 'The request is invalid.';
   }
-  if (status === 401) {
+  if (shouldAskForSignIn(status)) {
     return 'Please sign in again.';
   }
-  if (status === 403) {
+  if (shouldShowAccessDenied(status)) {
     return 'You are not allowed to access this resource.';
   }
-  if (status === 404) {
+  if (shouldShowNotFound(status)) {
     return 'The requested resource was not found.';
   }
-  if (status === 429) {
+  if (shouldShowThrottleMessage(status)) {
     return 'Too many requests. Please try again later.';
   }
-  if (status >= 500) {
+  if (shouldShowTechnicalMessage(status)) {
     return 'A technical error occurred. Please try again later.';
   }
   return 'Unexpected API response.';
-}
-
-export function retryAfterSeconds(headers: Headers): number | undefined {
-  const value = headers.get('Retry-After');
-  if (!value) {
-    return undefined;
-  }
-  const parsed = Number.parseInt(value, 10);
-  return Number.isNaN(parsed) ? undefined : parsed;
 }
