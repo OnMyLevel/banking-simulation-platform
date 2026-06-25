@@ -19,6 +19,16 @@ The Gateway client should centralize cross-cutting HTTP behavior:
 - Retry-After handling
 ```
 
+## Alignment rule
+
+All frontend applications must follow the shared behavior documented in:
+
+```text
+docs/frontend/ui-gateway-alignment.md
+```
+
+React, Vue and Angular may use different framework wrappers, but their request metadata and error behavior must stay aligned.
+
 ## Proposed TypeScript shape
 
 ```ts
@@ -60,28 +70,6 @@ export type GatewayApiError = {
 6. Read X-Correlation-Id from response.
 7. If response is ok, parse and return data.
 8. If response is not ok, normalize error and throw it.
-```
-
-## Suggested domain clients
-
-### Accounts API
-
-```ts
-export function getAccount(accountId: string): Promise<GatewayResponse<AccountDto>>;
-```
-
-### Operations API
-
-```ts
-export function createCredit(command: CreateCreditCommand): Promise<GatewayResponse<OperationDto>>;
-export function createDebit(command: CreateDebitCommand): Promise<GatewayResponse<OperationDto>>;
-export function createTransfer(command: CreateTransferCommand): Promise<GatewayResponse<OperationDto>>;
-```
-
-### Users API
-
-```ts
-export function getCurrentUser(): Promise<GatewayResponse<UserDto>>;
 ```
 
 ## Error display guidance

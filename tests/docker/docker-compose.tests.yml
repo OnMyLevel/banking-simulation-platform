@@ -59,7 +59,7 @@ services:
     command: mvn -q spring-boot:run -Dspring-boot.run.profiles=docker
     volumes:
       - ../..:/workspace
-      - maven_cache:/root/.m2
+      - account_maven_cache:/root/.m2
     environment:
       SPRING_PROFILES_ACTIVE: docker
     ports:
@@ -77,7 +77,7 @@ services:
     command: mvn -q spring-boot:run
     volumes:
       - ../..:/workspace
-      - maven_cache:/root/.m2
+      - observability_maven_cache:/root/.m2
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/banking_simulation
       SPRING_DATASOURCE_USERNAME: banking
@@ -95,7 +95,7 @@ services:
     command: mvn -q spring-boot:run -Dspring-boot.run.profiles=docker
     volumes:
       - ../..:/workspace
-      - maven_cache:/root/.m2
+      - core_maven_cache:/root/.m2
     environment:
       SPRING_PROFILES_ACTIVE: docker
       BANKING_ACCOUNT_API_BASE_URL: http://account-banking-api:8082
@@ -152,4 +152,6 @@ services:
         condition: service_started
 
 volumes:
-  maven_cache:
+  account_maven_cache:
+  core_maven_cache:
+  observability_maven_cache:
