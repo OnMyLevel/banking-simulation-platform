@@ -1,0 +1,26 @@
+name: Common Types Checks
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/common-types/**'
+      - '.github/workflows/common-types.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/common-types/**'
+      - '.github/workflows/common-types.yml'
+
+jobs:
+  common-types:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: cd frontend/common-types && npm install
+      - run: cd frontend/common-types && npm run lint
+      - run: cd frontend/common-types && npm run test
+      - run: cd frontend/common-types && npm run build
