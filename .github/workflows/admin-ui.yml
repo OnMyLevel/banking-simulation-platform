@@ -1,0 +1,24 @@
+name: Admin UI Checks
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+
+jobs:
+  admin-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: cd frontend/angular-app && npm install
+      - run: cd frontend/angular-app && npm run lint
+      - run: cd frontend/angular-app && npm run test
+      - run: cd frontend/angular-app && npm run build
