@@ -46,6 +46,7 @@ The shared contract is documented in:
 ```text
 docs/frontend/gateway-integration-contract.md
 docs/frontend/gateway-client-outline.md
+docs/frontend/ui-gateway-alignment.md
 docs/architecture/api-gateway-public-contract.md
 ```
 
@@ -167,7 +168,8 @@ Recommended order:
 3. UI check plan
 4. business-web-vue setup
 5. advisor-admin-angular setup
-6. shared contracts package when duplication appears
+6. Gateway client alignment
+7. shared contracts package when duplication appears
 ```
 
 ## Related documents
@@ -175,6 +177,7 @@ Recommended order:
 ```text
 docs/frontend/gateway-integration-contract.md
 docs/frontend/gateway-client-outline.md
+docs/frontend/ui-gateway-alignment.md
 docs/frontend/ui-check-plan.md
 docs/frontend/ui-pipeline-roadmap.md
 docs/architecture/api-gateway-public-contract.md
