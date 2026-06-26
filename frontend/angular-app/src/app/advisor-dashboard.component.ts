@@ -1,4 +1,5 @@
 import { Component, Input } from '@angular/core';
+import type { AngularGatewayErrorState } from './gateway-error.mapper';
 
 type DashboardStatus = 'ready' | 'empty' | 'error';
 
@@ -33,12 +34,15 @@ type DashboardItem = {
           The workspace is ready, but no support data has been loaded yet.
         </p>
       } @else {
-        <h1>Advisor workspace unavailable</h1>
+        <h1>{{ error?.title ?? 'Advisor workspace unavailable' }}</h1>
         <p class="description">
-          A technical error occurred while preparing the advisor workspace.
+          {{ error?.message ?? 'A technical error occurred while preparing the advisor workspace.' }}
         </p>
-        @if (reference) {
-          <p class="support-ref">Reference: {{ reference }}</p>
+        @if (error?.retryAfterSeconds) {
+          <p class="support-ref">Retry after {{ error?.retryAfterSeconds }} seconds.</p>
+        }
+        @if (error?.reference || reference) {
+          <p class="support-ref">Reference: {{ error?.reference ?? reference }}</p>
         }
       }
     </section>
@@ -115,6 +119,7 @@ export class AdvisorDashboardComponent {
   @Input() status: DashboardStatus = 'ready';
   @Input() title = 'Advisor dashboard';
   @Input() reference?: string;
+  @Input() error?: AngularGatewayErrorState;
   @Input() items: DashboardItem[] = [
     { label: 'Support cases', value: 'Ready' },
     { label: 'Investigations', value: 'Available' },
