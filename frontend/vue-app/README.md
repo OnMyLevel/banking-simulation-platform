@@ -9,6 +9,7 @@ Vue frontend application for company journeys.
 - TypeScript setup
 - company dashboard shell
 - ready, empty and error display states
+- shared error mapping
 - component tests
 ```
 
@@ -29,6 +30,13 @@ src/features/company/CompanyDashboard.vue
 ```
 
 The dashboard prepares the company portal for future Gateway-backed data. It currently renders static state through component props.
+
+## Shared types usage
+
+```text
+../common-types/src
+src/composables/useGatewayError.ts
+```
 
 ## Related documents
 
