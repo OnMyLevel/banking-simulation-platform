@@ -9,6 +9,7 @@ Angular frontend application for support and operational journeys.
 - TypeScript setup
 - advisor dashboard shell
 - ready, empty and error display states
+- shared error mapping
 - component tests
 ```
 
@@ -29,6 +30,13 @@ src/app/advisor-dashboard.component.ts
 ```
 
 The dashboard prepares the advisor workspace for future Gateway-backed data. It currently renders static state through component inputs.
+
+## Shared types usage
+
+```text
+../common-types/src
+src/app/gateway-error.mapper.ts
+```
 
 ## Related documents
 

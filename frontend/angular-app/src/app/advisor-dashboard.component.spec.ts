@@ -34,13 +34,19 @@ describe('AdvisorDashboardComponent', () => {
     expect(compiled.textContent).toContain('No advisor data yet');
   });
 
-  it('renders error state with reference', () => {
+  it('renders mapped error state with reference and retry delay', () => {
     fixture.componentRef.setInput('status', 'error');
-    fixture.componentRef.setInput('reference', 'corr-advisor-123');
+    fixture.componentRef.setInput('error', {
+      title: 'Too many requests',
+      message: 'Too many requests. Please try again later.',
+      reference: 'corr-advisor-123',
+      retryAfterSeconds: 30,
+    });
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain('Advisor workspace unavailable');
+    expect(compiled.textContent).toContain('Too many requests');
+    expect(compiled.textContent).toContain('Retry after 30 seconds.');
     expect(compiled.textContent).toContain('corr-advisor-123');
   });
 });
