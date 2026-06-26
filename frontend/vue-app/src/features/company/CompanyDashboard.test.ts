@@ -34,11 +34,17 @@ describe('CompanyDashboard', () => {
     const wrapper = mount(CompanyDashboard, {
       props: {
         status: 'error',
-        reference: 'corr-company-123',
+        error: {
+          title: 'Too many requests',
+          message: 'Too many requests. Please try again later.',
+          reference: 'corr-company-123',
+          retryAfterSeconds: 30,
+        },
       },
     });
 
-    expect(wrapper.text()).toContain('Company dashboard unavailable');
+    expect(wrapper.text()).toContain('Too many requests');
+    expect(wrapper.text()).toContain('Retry after 30 seconds.');
     expect(wrapper.text()).toContain('corr-company-123');
   });
 });

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { VueGatewayErrorState } from '../../composables/useGatewayError';
+
 type DashboardStatus = 'ready' | 'empty' | 'error';
 
 type DashboardItem = {
@@ -11,12 +13,14 @@ const props = withDefaults(
     status?: DashboardStatus;
     companyName?: string;
     reference?: string;
+    error?: VueGatewayErrorState;
     items?: DashboardItem[];
   }>(),
   {
     status: 'ready',
     companyName: 'Company workspace',
     reference: undefined,
+    error: undefined,
     items: () => [
       { label: 'Accounts', value: 'Ready' },
       { label: 'Payments', value: 'Prepared' },
@@ -51,11 +55,16 @@ const props = withDefaults(
     </template>
 
     <template v-else>
-      <h1>Company dashboard unavailable</h1>
+      <h1>{{ props.error?.title ?? 'Company dashboard unavailable' }}</h1>
       <p class="description">
-        A technical error occurred while preparing the company dashboard.
+        {{ props.error?.message ?? 'A technical error occurred while preparing the company dashboard.' }}
       </p>
-      <p v-if="props.reference" class="support-ref">Reference: {{ props.reference }}</p>
+      <p v-if="props.error?.retryAfterSeconds" class="support-ref">
+        Retry after {{ props.error.retryAfterSeconds }} seconds.
+      </p>
+      <p v-if="props.error?.reference ?? props.reference" class="support-ref">
+        Reference: {{ props.error?.reference ?? props.reference }}
+      </p>
     </template>
   </section>
 </template>
