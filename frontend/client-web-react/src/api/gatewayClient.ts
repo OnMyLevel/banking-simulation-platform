@@ -1,4 +1,5 @@
-import { GatewayApiException, messageForStatus, retryAfterSeconds } from './apiErrors';
+import { CLIENT_FIELD_NAMES, parseRetrySeconds } from '../../../common-types/src';
+import { GatewayApiException, messageForStatus } from './apiErrors';
 
 export type GatewayClientOptions = {
   baseUrl: string;
@@ -42,10 +43,10 @@ export class GatewayClient {
       headers.set('Content-Type', 'application/json');
     }
     if (accessValue) {
-      headers.set('Authorization', `Bearer ${accessValue}`);
+      headers.set(CLIENT_FIELD_NAMES.access, `Bearer ${accessValue}`);
     }
     if (correlationId) {
-      headers.set('X-Correlation-Id', correlationId);
+      headers.set(CLIENT_FIELD_NAMES.trace, correlationId);
     }
 
     const response = await this.fetcher(`${this.baseUrl}${options.path}`, {
@@ -54,14 +55,14 @@ export class GatewayClient {
       body: options.body === undefined ? undefined : JSON.stringify(options.body),
     });
 
-    const responseCorrelationId = response.headers.get('X-Correlation-Id') ?? undefined;
+    const responseCorrelationId = response.headers.get(CLIENT_FIELD_NAMES.trace) ?? undefined;
 
     if (!response.ok) {
       throw new GatewayApiException({
         status: response.status,
         message: await this.errorMessage(response),
         correlationId: responseCorrelationId,
-        retryAfterSeconds: retryAfterSeconds(response.headers),
+        retryAfterSeconds: parseRetrySeconds(response.headers.get(CLIENT_FIELD_NAMES.retry)),
       });
     }
 

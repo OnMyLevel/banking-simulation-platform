@@ -52,6 +52,14 @@ Responsibilities:
 - expose Retry-After for 429 responses
 ```
 
+Common frontend contracts:
+
+```text
+../common-types/src
+```
+
+The React API client now reuses framework-neutral field names, retry parsing and status helpers from the common types package.
+
 Gateway contract:
 
 ```text
@@ -72,4 +80,4 @@ It loads account data through `accountsApi`, handles loading, success and error 
 
 ## Current status
 
-The React and Vite foundation is in place with TypeScript, Vitest, ESLint configuration and the first account overview screen.
+The React and Vite foundation is in place with TypeScript, Vitest, ESLint configuration, common frontend type usage and the first account overview screen.
