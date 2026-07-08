@@ -15,6 +15,7 @@ Angular frontend application for support and operational journeys.
 - configurable Gateway endpoint through Angular environment
 - local development proxy for Gateway API calls
 - Correlation ID HTTP interceptor
+- Authentication HTTP interceptor
 - app integration with Gateway-backed dashboard states
 - component, app and service tests
 ```
@@ -95,6 +96,15 @@ src/app/correlation-id.interceptor.ts
 ```
 
 The interceptor adds `X-Correlation-Id` to outgoing HTTP requests when the request does not already provide one. Existing correlation IDs are preserved.
+
+## Authentication interceptor
+
+```text
+src/app/auth-token.service.ts
+src/app/auth.interceptor.ts
+```
+
+The token service centralizes access to the current bearer token. The authentication interceptor adds `Authorization: Bearer <token>` to outgoing HTTP requests when a token is available. Existing authorization headers are preserved.
 
 ## Shared types usage
 
