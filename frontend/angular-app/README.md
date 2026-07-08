@@ -12,6 +12,7 @@ Angular frontend application for support and operational journeys.
 - shared error mapping
 - Gateway API service for advisor dashboard data
 - Angular HttpClient integration
+- Gateway HTTP timeout and retry resilience
 - configurable Gateway endpoint through Angular environment
 - local development proxy for Gateway API calls
 - Correlation ID HTTP interceptor
@@ -87,6 +88,15 @@ The Gateway API service uses Angular `HttpClient` and exposes dashboard state as
 - ready: dashboard data is available
 - empty: no dashboard data is available
 - error: Gateway error mapped through shared frontend error helpers
+```
+
+The service applies request resilience for Gateway calls:
+
+```text
+- timeout after 5000 ms
+- retry 2 times for temporary failures only
+- retryable failures: network errors, 502, 503, 504
+- non-retryable failures: client and business errors such as 400, 401, 403, 404, 429
 ```
 
 ## Correlation ID interceptor
