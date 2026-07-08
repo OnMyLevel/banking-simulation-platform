@@ -11,6 +11,7 @@ Angular frontend application for support and operational journeys.
 - ready, empty, loading and error display states
 - shared error mapping
 - Gateway API service for advisor dashboard data
+- configurable Gateway endpoint through Angular environment
 - app integration with Gateway-backed dashboard states
 - component, app and service tests
 ```
@@ -33,6 +34,21 @@ src/app/advisor-dashboard.component.ts
 ```
 
 The app root loads advisor dashboard state through the Gateway API service and passes UI-ready state into the dashboard component.
+
+## Gateway configuration
+
+```text
+src/environments/environment.ts
+```
+
+The Angular app reads Gateway routing values from the environment config:
+
+```text
+gatewayBaseUrl
+advisorDashboardPath
+```
+
+The default setup keeps `gatewayBaseUrl` empty so local proxy or same-origin routing can serve `/api/advisor/dashboard`.
 
 ## Gateway API service
 
