@@ -1,8 +1,9 @@
-import { GatewayApiService, type GatewayFetch } from './gateway-api.service';
+import { TestBed } from '@angular/core/testing';
+import { GATEWAY_FETCH, GatewayApiService, type GatewayFetch } from './gateway-api.service';
 
 describe('GatewayApiService', () => {
   it('loads advisor dashboard data', async () => {
-    const service = new GatewayApiService(
+    const service = createService(
       responseWith({
         title: 'Advisor operations',
         items: [{ label: 'Support cases', value: '4 open' }],
@@ -19,7 +20,7 @@ describe('GatewayApiService', () => {
   });
 
   it('maps empty responses', async () => {
-    const service = new GatewayApiService(responseWith(null, { status: 204 }));
+    const service = createService(responseWith(null, { status: 204 }));
 
     const result = await service.loadAdvisorDashboard();
 
@@ -27,7 +28,7 @@ describe('GatewayApiService', () => {
   });
 
   it('maps empty item responses', async () => {
-    const service = new GatewayApiService(
+    const service = createService(
       responseWith({
         title: 'Advisor operations',
         items: [],
@@ -40,7 +41,7 @@ describe('GatewayApiService', () => {
   });
 
   it('maps gateway errors through the shared error mapper', async () => {
-    const service = new GatewayApiService(
+    const service = createService(
       responseWith(
         {
           status: 429,
@@ -64,6 +65,15 @@ describe('GatewayApiService', () => {
     }
   });
 });
+
+function createService(gatewayFetch: GatewayFetch): GatewayApiService {
+  TestBed.resetTestingModule();
+  TestBed.configureTestingModule({
+    providers: [{ provide: GATEWAY_FETCH, useValue: gatewayFetch }],
+  });
+
+  return TestBed.inject(GatewayApiService);
+}
 
 function responseWith(body: unknown, init: ResponseInit = {}): GatewayFetch {
   return async () =>
