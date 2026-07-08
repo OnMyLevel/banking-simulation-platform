@@ -11,6 +11,7 @@ Angular frontend application for support and operational journeys.
 - ready, empty, loading and error display states
 - shared error mapping
 - Gateway API service for advisor dashboard data
+- Angular HttpClient integration
 - configurable Gateway endpoint through Angular environment
 - local development proxy for Gateway API calls
 - app integration with Gateway-backed dashboard states
@@ -77,7 +78,7 @@ npm run dev:proxy
 src/app/gateway-api.service.ts
 ```
 
-The Gateway API service prepares the Angular app for advisor dashboard data loading. It converts HTTP responses into UI-ready dashboard states:
+The Gateway API service uses Angular `HttpClient` and exposes dashboard state as an RxJS observable. It converts HTTP responses into UI-ready dashboard states:
 
 ```text
 - loading: Gateway data is being requested
