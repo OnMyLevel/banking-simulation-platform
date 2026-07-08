@@ -1,6 +1,5 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { GatewayApiService } from './gateway-api.service';
 
 describe('GatewayApiService', () => {
@@ -68,7 +67,7 @@ describe('GatewayApiService', () => {
     });
   });
 
-  it('maps gateway errors through the shared error mapper', () => {
+  it('does not retry client errors', () => {
     service.loadAdvisorDashboard().subscribe((result) => {
       expect(result.status).toBe('error');
       if (result.status === 'error') {
@@ -91,9 +90,53 @@ describe('GatewayApiService', () => {
         headers: { 'retry-after': '30' },
       },
     );
+
+    httpMock.expectNone('/api/advisor/dashboard');
   });
 
-  it('maps technical errors when no JSON body is available', () => {
+  it('retries temporary gateway errors and returns the successful retry result', fakeAsync(() => {
+    service.loadAdvisorDashboard().subscribe((result) => {
+      expect(result.status).toBe('ready');
+      if (result.status === 'ready') {
+        expect(result.data.items[0].value).toBe('4 open');
+      }
+    });
+
+    const firstRequest = httpMock.expectOne('/api/advisor/dashboard');
+    firstRequest.flush(null, { status: 503, statusText: 'Service Unavailable' });
+
+    tick(100);
+
+    const retryRequest = httpMock.expectOne('/api/advisor/dashboard');
+    retryRequest.flush({
+      title: 'Advisor operations',
+      items: [{ label: 'Support cases', value: '4 open' }],
+    });
+  }));
+
+  it('stops retrying temporary gateway errors after the retry budget is exhausted', fakeAsync(() => {
+    service.loadAdvisorDashboard().subscribe((result) => {
+      expect(result.status).toBe('error');
+      if (result.status === 'error') {
+        expect(result.error.title).toBe('Technical error');
+      }
+    });
+
+    const firstRequest = httpMock.expectOne('/api/advisor/dashboard');
+    firstRequest.flush(null, { status: 503, statusText: 'Service Unavailable' });
+
+    tick(100);
+
+    const secondRequest = httpMock.expectOne('/api/advisor/dashboard');
+    secondRequest.flush(null, { status: 503, statusText: 'Service Unavailable' });
+
+    tick(100);
+
+    const thirdRequest = httpMock.expectOne('/api/advisor/dashboard');
+    thirdRequest.flush(null, { status: 503, statusText: 'Service Unavailable' });
+  }));
+
+  it('maps technical errors when no JSON body is available', fakeAsync(() => {
     service.loadAdvisorDashboard().subscribe((result) => {
       expect(result.status).toBe('error');
       if (result.status === 'error') {
@@ -102,7 +145,7 @@ describe('GatewayApiService', () => {
       }
     });
 
-    const request = httpMock.expectOne('/api/advisor/dashboard');
-    request.error(new ProgressEvent('error'), { status: 500, statusText: 'Server Error' });
-  });
+    const firstRequest = httpMock.expectOne('/api/advisor/dashboard');
+    firstRequest.error(new ProgressEvent('error'), { status: 500, statusText: 'Server Error' });
+  }));
 });
