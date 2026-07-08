@@ -8,10 +8,11 @@ Angular frontend application for support and operational journeys.
 - Angular setup
 - TypeScript setup
 - advisor dashboard shell
-- ready, empty and error display states
+- ready, empty, loading and error display states
 - shared error mapping
 - Gateway API service for advisor dashboard data
-- component and service tests
+- app integration with Gateway-backed dashboard states
+- component, app and service tests
 ```
 
 ## Commands
@@ -27,10 +28,11 @@ npm run build
 ## Main screen
 
 ```text
+src/app/app.component.ts
 src/app/advisor-dashboard.component.ts
 ```
 
-The dashboard prepares the advisor workspace for Gateway-backed data. It currently renders state through component inputs.
+The app root loads advisor dashboard state through the Gateway API service and passes UI-ready state into the dashboard component.
 
 ## Gateway API service
 
@@ -41,6 +43,7 @@ src/app/gateway-api.service.ts
 The Gateway API service prepares the Angular app for advisor dashboard data loading. It converts HTTP responses into UI-ready dashboard states:
 
 ```text
+- loading: Gateway data is being requested
 - ready: dashboard data is available
 - empty: no dashboard data is available
 - error: Gateway error mapped through shared frontend error helpers
