@@ -1,4 +1,5 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AdvisorDashboardComponent } from './advisor-dashboard.component';
 import { GatewayApiService, type AdvisorDashboardData } from './gateway-api.service';
 import type { AngularGatewayErrorState } from './gateway-error.mapper';
@@ -70,14 +71,20 @@ type AppDashboardStatus = 'loading' | 'ready' | 'empty' | 'error';
 })
 export class AppComponent implements OnInit {
   private readonly gatewayApi = inject(GatewayApiService);
+  private readonly destroyRef = inject(DestroyRef);
 
   status: AppDashboardStatus = 'loading';
   dashboard?: AdvisorDashboardData;
   error?: AngularGatewayErrorState;
 
-  async ngOnInit(): Promise<void> {
-    const result = await this.gatewayApi.loadAdvisorDashboard();
+  ngOnInit(): void {
+    this.gatewayApi
+      .loadAdvisorDashboard()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((result) => this.applyDashboardResult(result));
+  }
 
+  private applyDashboardResult(result: ReturnType<GatewayApiService['loadAdvisorDashboard']> extends import('rxjs').Observable<infer T> ? T : never): void {
     if (result.status === 'ready') {
       this.status = 'ready';
       this.dashboard = result.data;
