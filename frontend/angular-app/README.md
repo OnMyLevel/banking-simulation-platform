@@ -12,6 +12,7 @@ Angular frontend application for support and operational journeys.
 - shared error mapping
 - Gateway API service for advisor dashboard data
 - configurable Gateway endpoint through Angular environment
+- local development proxy for Gateway API calls
 - app integration with Gateway-backed dashboard states
 - component, app and service tests
 ```
@@ -21,6 +22,7 @@ Angular frontend application for support and operational journeys.
 ```text
 npm install
 npm run dev
+npm run dev:proxy
 npm run lint
 npm run test
 npm run build
@@ -49,6 +51,25 @@ advisorDashboardPath
 ```
 
 The default setup keeps `gatewayBaseUrl` empty so local proxy or same-origin routing can serve `/api/advisor/dashboard`.
+
+## Local Gateway proxy
+
+```text
+proxy.conf.json
+npm run dev:proxy
+```
+
+The local proxy forwards Angular `/api` requests to the Gateway running on:
+
+```text
+http://localhost:8080
+```
+
+Use this command when running the Angular app locally with the Gateway service:
+
+```text
+npm run dev:proxy
+```
 
 ## Gateway API service
 
