@@ -2,6 +2,21 @@ import { TestBed } from '@angular/core/testing';
 import { GATEWAY_FETCH, GatewayApiService, type GatewayFetch } from './gateway-api.service';
 
 describe('GatewayApiService', () => {
+  it('calls the configured advisor dashboard endpoint', async () => {
+    const calls: string[] = [];
+    const service = createService(async (input) => {
+      calls.push(input);
+      return jsonResponse({
+        title: 'Advisor operations',
+        items: [{ label: 'Support cases', value: '4 open' }],
+      });
+    });
+
+    await service.loadAdvisorDashboard();
+
+    expect(calls).toEqual(['/api/advisor/dashboard']);
+  });
+
   it('loads advisor dashboard data', async () => {
     const service = createService(
       responseWith({
@@ -76,12 +91,15 @@ function createService(gatewayFetch: GatewayFetch): GatewayApiService {
 }
 
 function responseWith(body: unknown, init: ResponseInit = {}): GatewayFetch {
-  return async () =>
-    new Response(body === null ? null : JSON.stringify(body), {
-      status: init.status ?? 200,
-      headers: {
-        'content-type': 'application/json',
-        ...(init.headers as Record<string, string> | undefined),
-      },
-    });
+  return async () => jsonResponse(body, init);
+}
+
+function jsonResponse(body: unknown, init: ResponseInit = {}): Response {
+  return new Response(body === null ? null : JSON.stringify(body), {
+    status: init.status ?? 200,
+    headers: {
+      'content-type': 'application/json',
+      ...(init.headers as Record<string, string> | undefined),
+    },
+  });
 }
