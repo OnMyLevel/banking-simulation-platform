@@ -14,6 +14,7 @@ Angular frontend application for support and operational journeys.
 - Angular HttpClient integration
 - configurable Gateway endpoint through Angular environment
 - local development proxy for Gateway API calls
+- Correlation ID HTTP interceptor
 - app integration with Gateway-backed dashboard states
 - component, app and service tests
 ```
@@ -86,6 +87,14 @@ The Gateway API service uses Angular `HttpClient` and exposes dashboard state as
 - empty: no dashboard data is available
 - error: Gateway error mapped through shared frontend error helpers
 ```
+
+## Correlation ID interceptor
+
+```text
+src/app/correlation-id.interceptor.ts
+```
+
+The interceptor adds `X-Correlation-Id` to outgoing HTTP requests when the request does not already provide one. Existing correlation IDs are preserved.
 
 ## Shared types usage
 
