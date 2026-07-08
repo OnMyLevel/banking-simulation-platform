@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { Observable, of } from 'rxjs';
 import { AppComponent } from './app.component';
 import { GatewayApiService, type AdvisorDashboardResult } from './gateway-api.service';
 
@@ -6,7 +7,7 @@ describe('AppComponent', () => {
   it('renders loading state before Gateway data is resolved', () => {
     TestBed.configureTestingModule({
       imports: [AppComponent],
-      providers: [{ provide: GatewayApiService, useValue: gatewayService(pendingResult()) }],
+      providers: [{ provide: GatewayApiService, useValue: gatewayService(new Observable<AdvisorDashboardResult>()) }],
     });
 
     const fixture = TestBed.createComponent(AppComponent);
@@ -16,14 +17,14 @@ describe('AppComponent', () => {
     expect(compiled.textContent).toContain('Loading advisor dashboard');
   });
 
-  it('renders ready Gateway data', async () => {
+  it('renders ready Gateway data', () => {
     TestBed.configureTestingModule({
       imports: [AppComponent],
       providers: [
         {
           provide: GatewayApiService,
           useValue: gatewayService(
-            Promise.resolve({
+            of({
               status: 'ready',
               data: {
                 title: 'Advisor operations',
@@ -37,37 +38,33 @@ describe('AppComponent', () => {
 
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('Advisor operations');
     expect(compiled.textContent).toContain('4 open');
   });
 
-  it('renders empty Gateway state', async () => {
+  it('renders empty Gateway state', () => {
     TestBed.configureTestingModule({
       imports: [AppComponent],
-      providers: [{ provide: GatewayApiService, useValue: gatewayService(Promise.resolve({ status: 'empty' })) }],
+      providers: [{ provide: GatewayApiService, useValue: gatewayService(of({ status: 'empty' })) }],
     });
 
     const fixture = TestBed.createComponent(AppComponent);
-    fixture.detectChanges();
-    await fixture.whenStable();
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('No advisor data yet');
   });
 
-  it('renders mapped Gateway errors', async () => {
+  it('renders mapped Gateway errors', () => {
     TestBed.configureTestingModule({
       imports: [AppComponent],
       providers: [
         {
           provide: GatewayApiService,
           useValue: gatewayService(
-            Promise.resolve({
+            of({
               status: 'error',
               error: {
                 title: 'Technical error',
@@ -82,8 +79,6 @@ describe('AppComponent', () => {
 
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('Technical error');
@@ -91,12 +86,8 @@ describe('AppComponent', () => {
   });
 });
 
-function gatewayService(result: Promise<AdvisorDashboardResult>): Pick<GatewayApiService, 'loadAdvisorDashboard'> {
+function gatewayService(result: Observable<AdvisorDashboardResult>): Pick<GatewayApiService, 'loadAdvisorDashboard'> {
   return {
     loadAdvisorDashboard: () => result,
   };
-}
-
-function pendingResult(): Promise<AdvisorDashboardResult> {
-  return new Promise(() => undefined);
 }
