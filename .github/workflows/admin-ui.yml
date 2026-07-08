@@ -4,12 +4,14 @@ on:
   pull_request:
     paths:
       - 'frontend/angular-app/**'
+      - 'frontend/common-types/**'
       - '.github/workflows/admin-ui.yml'
   push:
     branches:
       - main
     paths:
       - 'frontend/angular-app/**'
+      - 'frontend/common-types/**'
       - '.github/workflows/admin-ui.yml'
 
 jobs:
