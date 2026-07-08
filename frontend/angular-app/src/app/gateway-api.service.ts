@@ -1,4 +1,6 @@
-import { Injectable, InjectionToken, inject } from '@angular/core';
+import { HttpClient, HttpErrorResponse, HttpResponse } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { Observable, catchError, map, of } from 'rxjs';
 import type { FrontendApiError } from '../../../common-types/src';
 import { environment } from '../environments/environment';
 import { toAngularGatewayErrorState, type AngularGatewayErrorState } from './gateway-error.mapper';
@@ -24,71 +26,61 @@ export type AdvisorDashboardResult =
       error: AngularGatewayErrorState;
     };
 
-export type GatewayFetch = (input: string, init?: RequestInit) => Promise<Response>;
-
-export const GATEWAY_FETCH = new InjectionToken<GatewayFetch>('GATEWAY_FETCH', {
-  providedIn: 'root',
-  factory: () => fetch,
-});
-
 @Injectable({ providedIn: 'root' })
 export class GatewayApiService {
   private readonly advisorDashboardUrl = `${environment.gatewayBaseUrl}${environment.advisorDashboardPath}`;
-  private readonly gatewayFetch = inject(GATEWAY_FETCH);
+  private readonly http = inject(HttpClient);
 
-  async loadAdvisorDashboard(): Promise<AdvisorDashboardResult> {
-    const response = await this.gatewayFetch(this.advisorDashboardUrl, {
-      headers: {
-        Accept: 'application/json',
-      },
-    });
+  loadAdvisorDashboard(): Observable<AdvisorDashboardResult> {
+    return this.http
+      .get<AdvisorDashboardData>(this.advisorDashboardUrl, {
+        observe: 'response',
+        headers: {
+          Accept: 'application/json',
+        },
+      })
+      .pipe(
+        map((response) => this.toDashboardResult(response)),
+        catchError((error: HttpErrorResponse) => of(this.toErrorResult(error))),
+      );
+  }
 
-    if (response.status === 204) {
-      return { status: 'empty' };
-    }
-
-    if (!response.ok) {
-      return {
-        status: 'error',
-        error: toAngularGatewayErrorState(await this.readApiError(response)),
-      };
-    }
-
-    const data = (await response.json()) as AdvisorDashboardData;
-
-    if (data.items.length === 0) {
+  private toDashboardResult(response: HttpResponse<AdvisorDashboardData>): AdvisorDashboardResult {
+    if (response.status === 204 || !response.body || response.body.items.length === 0) {
       return { status: 'empty' };
     }
 
     return {
       status: 'ready',
-      data,
+      data: response.body,
     };
   }
 
-  private async readApiError(response: Response): Promise<FrontendApiError> {
-    const fallbackMessage = 'A technical error occurred. Please try again later.';
-
-    try {
-      const body = (await response.json()) as Partial<FrontendApiError>;
-      return {
-        status: response.status,
-        message: body.message ?? fallbackMessage,
-        correlationId: body.correlationId ?? response.headers.get('x-correlation-id') ?? undefined,
-        retryAfterSeconds: body.retryAfterSeconds ?? this.readRetryAfterSeconds(response),
-      };
-    } catch {
-      return {
-        status: response.status,
-        message: fallbackMessage,
-        correlationId: response.headers.get('x-correlation-id') ?? undefined,
-        retryAfterSeconds: this.readRetryAfterSeconds(response),
-      };
-    }
+  private toErrorResult(error: HttpErrorResponse): AdvisorDashboardResult {
+    return {
+      status: 'error',
+      error: toAngularGatewayErrorState(this.toApiError(error)),
+    };
   }
 
-  private readRetryAfterSeconds(response: Response): number | undefined {
-    const retryAfter = response.headers.get('retry-after');
+  private toApiError(error: HttpErrorResponse): FrontendApiError {
+    const body = this.readErrorBody(error.error);
+    const fallbackMessage = 'A technical error occurred. Please try again later.';
+
+    return {
+      status: error.status,
+      message: body.message ?? fallbackMessage,
+      correlationId: body.correlationId ?? error.headers.get('x-correlation-id') ?? undefined,
+      retryAfterSeconds: body.retryAfterSeconds ?? this.readRetryAfterSeconds(error),
+    };
+  }
+
+  private readErrorBody(error: unknown): Partial<FrontendApiError> {
+    return typeof error === 'object' && error !== null ? (error as Partial<FrontendApiError>) : {};
+  }
+
+  private readRetryAfterSeconds(error: HttpErrorResponse): number | undefined {
+    const retryAfter = error.headers.get('retry-after');
 
     if (!retryAfter) {
       return undefined;
