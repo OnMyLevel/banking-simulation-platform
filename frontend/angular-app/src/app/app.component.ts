@@ -75,25 +75,25 @@ export class AppComponent implements OnInit {
   dashboard?: AdvisorDashboardData;
   error?: AngularGatewayErrorState;
 
-  async ngOnInit(): Promise<void> {
-    const result = await this.gatewayApi.loadAdvisorDashboard();
+  ngOnInit(): void {
+    this.gatewayApi.loadAdvisorDashboard().subscribe((result) => {
+      if (result.status === 'ready') {
+        this.status = 'ready';
+        this.dashboard = result.data;
+        this.error = undefined;
+        return;
+      }
 
-    if (result.status === 'ready') {
-      this.status = 'ready';
-      this.dashboard = result.data;
-      this.error = undefined;
-      return;
-    }
+      if (result.status === 'empty') {
+        this.status = 'empty';
+        this.dashboard = undefined;
+        this.error = undefined;
+        return;
+      }
 
-    if (result.status === 'empty') {
-      this.status = 'empty';
+      this.status = 'error';
       this.dashboard = undefined;
-      this.error = undefined;
-      return;
-    }
-
-    this.status = 'error';
-    this.dashboard = undefined;
-    this.error = result.error;
+      this.error = result.error;
+    });
   }
 }
