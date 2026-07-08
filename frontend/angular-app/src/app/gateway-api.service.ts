@@ -1,7 +1,7 @@
 import { HttpClient, HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import type { FrontendApiError } from '../../../common-types/src';
-import { catchError, map, of, type Observable } from 'rxjs';
+import { catchError, map, of, retry, throwError, timer, timeout, type Observable } from 'rxjs';
 import { environment } from '../environments/environment';
 import { toAngularGatewayErrorState, type AngularGatewayErrorState } from './gateway-error.mapper';
 
@@ -26,6 +26,10 @@ export type AdvisorDashboardResult =
       error: AngularGatewayErrorState;
     };
 
+const GATEWAY_TIMEOUT_MS = 5000;
+const GATEWAY_RETRY_COUNT = 2;
+const GATEWAY_RETRY_DELAY_MS = 100;
+
 @Injectable({ providedIn: 'root' })
 export class GatewayApiService {
   private readonly advisorDashboardUrl = `${environment.gatewayBaseUrl}${environment.advisorDashboardPath}`;
@@ -37,8 +41,13 @@ export class GatewayApiService {
         observe: 'response',
       })
       .pipe(
+        timeout(GATEWAY_TIMEOUT_MS),
+        retry({
+          count: GATEWAY_RETRY_COUNT,
+          delay: (error: unknown) => (this.shouldRetry(error) ? timer(GATEWAY_RETRY_DELAY_MS) : throwError(() => error)),
+        }),
         map((response) => this.toDashboardResult(response)),
-        catchError((error: HttpErrorResponse) => of(this.toErrorResult(error))),
+        catchError((error: unknown) => of(this.toErrorResult(this.toHttpError(error)))),
       );
   }
 
@@ -53,11 +62,31 @@ export class GatewayApiService {
     };
   }
 
+  private shouldRetry(error: unknown): boolean {
+    if (!(error instanceof HttpErrorResponse)) {
+      return false;
+    }
+
+    return error.status === 0 || error.status === 502 || error.status === 503 || error.status === 504;
+  }
+
   private toErrorResult(error: HttpErrorResponse): AdvisorDashboardResult {
     return {
       status: 'error',
       error: toAngularGatewayErrorState(this.toApiError(error)),
     };
+  }
+
+  private toHttpError(error: unknown): HttpErrorResponse {
+    if (error instanceof HttpErrorResponse) {
+      return error;
+    }
+
+    return new HttpErrorResponse({
+      error,
+      status: 0,
+      statusText: 'Gateway timeout',
+    });
   }
 
   private toApiError(error: HttpErrorResponse): FrontendApiError {
