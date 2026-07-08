@@ -1,5 +1,6 @@
 import { Injectable, InjectionToken, inject } from '@angular/core';
 import type { FrontendApiError } from '../../../common-types/src';
+import { environment } from '../environments/environment';
 import { toAngularGatewayErrorState, type AngularGatewayErrorState } from './gateway-error.mapper';
 
 export type AdvisorDashboardData = {
@@ -32,11 +33,11 @@ export const GATEWAY_FETCH = new InjectionToken<GatewayFetch>('GATEWAY_FETCH', {
 
 @Injectable({ providedIn: 'root' })
 export class GatewayApiService {
-  private readonly advisorDashboardPath = '/api/advisor/dashboard';
+  private readonly advisorDashboardUrl = `${environment.gatewayBaseUrl}${environment.advisorDashboardPath}`;
   private readonly gatewayFetch = inject(GATEWAY_FETCH);
 
   async loadAdvisorDashboard(): Promise<AdvisorDashboardResult> {
-    const response = await this.gatewayFetch(this.advisorDashboardPath, {
+    const response = await this.gatewayFetch(this.advisorDashboardUrl, {
       headers: {
         Accept: 'application/json',
       },
